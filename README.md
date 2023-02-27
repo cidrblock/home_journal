@@ -47,3 +47,10 @@ I had an old wordpress blog that I convertered to markdown files. (https://githu
 - Install from the source directory `pip install .`
 - Run the server `home-journal -sd /your/site/root --tags cars,people,boats,nature
 - Enjoy (http://your.server:8000)
+
+## Thank you
+
+- Slick modern simple CSS https://www.beercss.com/
+- Markdown to HTML, github style https://github.com/theacodes/cmarkgfm
+- Handy frontmatter extractor https://github.com/eyeseast/python-frontmatter
+
