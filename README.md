@@ -1,7 +1,5 @@
 
-![](screenshots/main.png | width=300)
-
-![](screenshots/new.png | width=300)
+![](screenshots/main-small.png)![](screenshots/new-small.png)
 
 
 # A prototype home journaling system
