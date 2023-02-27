@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>{{post.title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" href="/css/github-markdown-dark.css"> -->
+    <link href="/css/beer.min.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet">
+    <script src="/js/lightense.min.js"></script>
+    <script src="/js/site.js"></script>
+</head>
+
+<body class="dark">
+    <nav class="bottom no-margin black">
+        <a href="/{{ post.previous }}">
+            <i>arrow_back</i>
+            <div>Previous</div>
+        </a>
+        <a href="/">
+            <i>home</i>
+            <div>Home</div>
+        </a>
+        <a href="/new.html">
+            <i>add</i>
+            <div>New</div>
+        </a>
+        <a href="/{{ post.next }}">
+            <i>arrow_forward</i>
+            <div>Next</div>
+        </a>
+    </nav>
+    <main class="responsive" style="min-height: 100dvh; display: flex; flex-direction: column;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column;">
+            <article class="single-post" style="flex-grow:1">
+                <h3>{{post.title}}</h3>
+                <p>{{ post.date.strftime('%B %d, %Y') }}</p>
+
+                {% if post.author %}
+                / {{ post.author }}
+                {% endif%}
+                {% if post.tags %}
+                <p>
+                    {% for tag in post.tags %}
+                    <a href="/tags/{{ tag }}.html" class="deemphasisze">
+                        {{ tag }}{{ " | " if not loop.last else"" }}
+                    </a>
+                    {% endfor %}
+                </p>
+                {% endif %}
+                <div class="small-space"></div>
+                <hr style="width: 7%">
+                <div class="small-space"></div>
+
+                <div class="markdown-body" style="flex-grow: 1">
+                    {{ content }}
+                </div>
+            </article>
+        </div>
+
+</body>
+
+</html>

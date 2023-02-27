@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <title>{{ title }}</title>
+    <link href="/css/beer.min.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet">
+    <script type="module" src="js/beer.min.js"></script>
+    <script type="module" src="js/material-dynamic-colors.min.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            console.log("Service Worker Registered");
+        }
+
+    </script>
+
+</head>
+
+<body class="dark">
+    <nav class="bottom no-margin black">
+        <a href="/">
+            <i>home</i>
+            <div>Home</div>
+        </a>
+        <a href="/new.html">
+            <i>add</i>
+            <div>New</div>
+        </a>
+    </nav>
+    <main class="responsive">
+        <div class="s12 page-title">
+            <h2>{{ title }}</h2>
+        </div>
+        <div class="main">
+            {% for post in posts|reverse %}
+            <div class="post">
+                {% if post.thumbnail_url %}
+                <article class="with-image">
+                    <a href="{{post.post_url}}">
+                        <img class="responsive large article-image" src="{{ post.thumbnail_url }}">
+                    </a>
+                    <div class="article-meta">
+                        <h6><a href="{{post.post_url}}">{{ post.title }}</a></h6>
+                        <p>{{ post.date.strftime('%B %d, %Y') }}</p>
+                        {% if post.tags %}
+                        <p>
+                            {% for tag in post.tags %}
+                            <a href="/tags/{{ tag }}.html" class="deemphasisze">
+                                {{ tag }}{{ " | " if not loop.last else"" }}
+                            </a>
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+
+                    </div>
+                </article>
+                {% else %}
+                <article class="without-image">
+                    <div>
+                        <h6><a href="{{post.post_url}}">{{ post.title }}</a></h6>
+                        <p>{{ post.date.strftime('%B %d, %Y') }}</p>
+                        {% if post.tags %}
+                        <p>
+                            {% for tag in post.tags %}
+                            <a href="/tags/{{ tag }}.html" class="deemphasisze">
+                                {{ tag }}{{ " | " if not loop.last else"" }}
+                            </a>
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+</body>
+
+</html>

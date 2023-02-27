@@ -1,0 +1,99 @@
+[build-system]
+requires = [
+  "setuptools >= 63.0.0", # required by pyproject+setuptools_scm integration
+]
+
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "home_journal"
+dynamic = ["version", "dependencies"]
+description = "A simple journal for use at home by the family"
+authors = [{"name" = "Bradley A. Thornton"}]
+license = {text = "MIT"}
+requires-python = ">=3.11"
+readme = "README.md"
+classifiers =[
+    "Development Status :: 3 - Alpha",
+    "Framework :: Flask",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",    
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy"
+]
+
+[project.scripts]
+home-journal = "home_journal.run:main"
+
+[project.urls]
+Homepage = "https://github.com/cidrblock/home_journal"
+
+[tool]
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+force_single_line = true # Force from .. import to be 1 per line, minimizing changes at time of implementation
+known_first_party = "ansible_navigator, key_value_store" # No effect at implementation, here anticipating future benefit
+lines_after_imports = 2 # Ensures consistency for cases when there's variable vs function/class definitions after imports
+lines_between_types = 1 # Separate import/from with 1 line, minimizing changes at time of implementation
+no_lines_before = "LOCALFOLDER" # Keeps local imports bundled with first-party
+profile = "black" # Avoid conflict with black
+
+[tool.mypy]
+python_version = 3.11
+strict = true
+color_output = true
+error_summary = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+# disallow_any_unimported = True
+# warn_redundant_casts = True
+# warn_return_any = True
+# warn_unused_configs = True
+
+[tool.pylint]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.imports]
+preferred-modules = [
+  # NOTE: The unittest replacements below help keep
+  # NOTE: the tests pytest ecosystem-oriented.
+  "unittest:pytest",
+  "unittest.mock:pytest-mock",
+]
+
+[tool.pylint.master]
+# pylint defaults + fh for with open .. as (f|fh)
+good-names = "i,j,k,ex,Run,_,f,fh"
+jobs = 0
+
+[tool.pylint.messages_control]
+disable = [
+  "duplicate-code",
+  "fixme",
+  "too-few-public-methods",
+  "unsubscriptable-object",
+]
+enable = [
+  "useless-suppression", # Identify unneeded pylint disable statements
+
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+dependencies = { file = [".config/requirements.in"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]

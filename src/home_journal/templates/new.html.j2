@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <title>new post</title>
+    <link href="css/beer.min.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet">
+
+    <script type="module" src="js/beer.min.js"></script>
+    <script type="module" src="js/material-dynamic-colors.min.js"></script>
+    <script src="/js/new.js"></script>
+
+</head>
+
+<body class="dark">
+    <nav class="bottom no-margin black">
+        <a href="/">
+            <i>home</i>
+            <div>Home</div>
+        </a>
+        <a href="/new.html">
+            <i>add</i>
+            <div>New</div>
+        </a>
+    </nav>
+    <main class="responsive" style="min-height: 100dvh; display: flex; flex-direction: column;">
+        <div class=" s12 page-title">
+            <h2>post</h2>
+        </div>
+        <div class="s12" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <article class="new-post" style=" flex-grow: 1;">
+                <form action="/" method="post" enctype="multipart/form-data" autocomplete="off" id="form">
+                    <div class="grid no-space">
+                        <div class="s12">
+                            <div class="field label border round">
+                                <input type="text" name="title" required>
+                                <label>Title</label>
+                            </div>
+                        </div>
+
+                        {% if tags %}
+                        <div class="s12">
+                            <span style="font-size: 1rem" ;>Common tags</span>
+                        </div>
+                        <div class="s12 small-space"></div>
+                        {% for tag in tags | sort %}
+                        <div class="s4 m3">
+                            <label class="checkbox">
+                                <input type="checkbox" name="tag-{{ tag }}">
+                                <span>{{ tag|capitalize }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                        <div class="large-space"></div>
+                        {% endif %}
+                        <div class="s12">
+                            <div class="field label border round">
+                                <input type="text" name="tags">
+                                <label>Custom tags</label>
+                            </div>
+                        </div>
+                        <div class="s12">
+                            <div class="field textarea label border extra round">
+                                <textarea id="content" name="content" required></textarea>
+                                <label>Content</label>
+                            </div>
+                        </div>
+                        <div class="s12">
+                            <div class="field label prefix border round">
+                                <i>attach_file</i>
+                                <input type="text">
+                                <input type="file" name="images" id="images" multiple>
+                                <label>Images</label>
+                            </div>
+                        </div>
+                        <div class="s12">
+                            <button class="absolute right circle extra" type="submit"><i>arrow_forward</i></button>
+                        </div>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </main>
+</body>
+
+</html>

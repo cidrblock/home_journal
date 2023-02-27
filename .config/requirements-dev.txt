@@ -1,0 +1,13 @@
+black
+cmarkgfm
+flake8
+flake8-docstrings
+flake8-pydocstyle
+flask
+mypy
+pillow
+pylint
+python-frontmatter
+types-PyYAML
+types-waitress
+waitress
