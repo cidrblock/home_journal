@@ -5,7 +5,7 @@
 
 # Home Journal
 
-A self-hosted mini journaling site for familes for captureing memories.
+A self-hosted mini journaling site for familes for capturing memories.
 
 I had an old wordpress blog that I convertered to markdown files. (https://github.com/lonekorean/wordpress-export-to-markdown) and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:
 
