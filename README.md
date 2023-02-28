@@ -34,6 +34,7 @@ I had an old wordpress blog that I convertered to markdown files and needed a wa
 - Responsive design
 - Rebuild static html files (http://your.server/all)
 - Static files for all but new entry submission
+- Github style markdown formatting
 
 ## Future enhancements
 
@@ -54,6 +55,7 @@ I had an old wordpress blog that I convertered to markdown files and needed a wa
 
 - Slick modern simple CSS https://www.beercss.com/
 - Markdown to HTML, github style https://github.com/theacodes/cmarkgfm
+- Github style markdown/html CSS https://github.com/sindresorhus/github-markdown-css
 - Handy frontmatter extractor https://github.com/eyeseast/python-frontmatter
 - Easy wordpress xml to md https://github.com/lonekorean/wordpress-export-to-markdown
 - Sample photos https://unsplash.com/
