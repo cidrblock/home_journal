@@ -9,7 +9,14 @@
       "type": "python",
       "request": "launch",
       "module": "home_journal",
-      "args": ["-sd", "/space8/home_journal/sample_site", "-p", "9000"],
+      "args": [
+        "-sd",
+        "/space8/home_journal/sample_site",
+        "-p",
+        "9000",
+        "--tags",
+        "cars,people,boats,nature"
+      ],
       "justMyCode": true,
       "cwd": "${workspaceFolder}/src"
     }
