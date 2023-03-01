@@ -1,3 +1,5 @@
+"""Home Journal main module."""
+
 from .run import main
 
 

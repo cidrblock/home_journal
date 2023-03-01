@@ -1,0 +1,1 @@
+"""The home journal module."""

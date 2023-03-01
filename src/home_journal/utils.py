@@ -58,12 +58,20 @@ class BasePost:
 
     @property
     def fs_image_dir(self) -> Path:
-        """Get the full path to the image directory."""
+        """Get the full path to the image directory.
+
+        Returns:
+            The full path to the image directory.
+        """
         return self.fs_post_directory / "images"
 
     @property
     def fs_post_full_html_path(self) -> Path:
-        """Get the full path to the post html file."""
+        """Get the full path to the post html file.
+
+        Returns:
+            The full path to the post html file.
+        """
         return self.fs_post_directory / "index.html"
 
 
@@ -81,16 +89,16 @@ class ExistingPost(BasePost):
     thumbnail_url: Path | None = None
 
     @property
-    def author_index(self) -> Path:
-        """Get the author index url."""
+    def author_index(self) -> str:
+        """Get the author index url.
+
+        Returns:
+            The author index url.
+        """
         return f"{_slugify(self.author)}.html"
 
     def write_html(self) -> None:
-        """Write the post to an HTML file.
-
-        Args:
-            post: The post.
-        """
+        """Write the post to an HTML file."""
         template = jinja_env.get_template("post.html.j2")
         html_content = _render_markdown(self.md_content)
         rendered = template.render(post=self, content=html_content)
@@ -106,14 +114,18 @@ class NewPost(BasePost):
 
     @property
     def fs_post_full_md_path(self) -> Path:
-        """Get the full path to the post md file."""
+        """Get the full path to the post md file.
+
+        Returns:
+            The full path to the post md file.
+        """
         return self.fs_post_directory / "post.md"
 
     @property
     def md_header(self) -> str:
         """Convert the post metadata to a dictionary.
 
-        This is needed during templating of the markdown and html files.
+        This is needed when markdown and html files are generated.
 
         Returns:
             The post metadata as a dictionary.
@@ -130,7 +142,11 @@ class NewPost(BasePost):
 
     @property
     def relative_image_path(self) -> Path:
-        """Get the relative path to the image directory."""
+        """Get the relative path to the image directory.
+
+        Returns:
+            The relative path to the image directory.
+        """
         return self.fs_image_dir.relative_to(self.fs_post_directory)
 
     @property
@@ -143,12 +159,7 @@ class NewPost(BasePost):
         return [self.relative_image_path / image for image in self.image_file_names]
 
     def write_md(self) -> None:
-        """Write the post to a markdown file.
-
-        Args:
-            post: The post.
-            dir_path: The directory to write the post to.
-        """
+        """Write the post to a markdown file."""
         self.fs_post_full_md_path.write_text(self.md_content, encoding="utf-8")
 
 
@@ -183,7 +194,8 @@ def _extract_tags(request: Request) -> list[str]:
     Returns:
         The tags.
     """
-    selected_tags = [key.split("-", 1)[1] for key in request.form.keys() if key.startswith("tag-")]
+    form_keys = request.form.keys()  # type: ignore[no-untyped-call]
+    selected_tags = [key.split("-", 1)[1] for key in form_keys if key.startswith("tag-")]
     form_tags = request.form.get("tags", "")
     tag_list = [tag.strip() for tag in form_tags.split(",")] + selected_tags
     if not tag_list:
@@ -196,10 +208,11 @@ def _extract_images(post: NewPost, request: Request) -> None:
     """Extract images from flask request.
 
     Args:
+        post: The post to extract images for.
         request: The Markdown content to extract images from.
 
-    Returns:
-        The image relative paths.
+    Raises:
+        ValueError: If the image directory is not set.
     """
     if not post.fs_image_dir:
         raise ValueError("fs_image_dir is not set")
@@ -224,6 +237,9 @@ def _populate_post_metadata(
     Args:
         md_glob: The glob of markdown files.
         site_dir: The directory of the site.
+
+    Returns:
+        The list of posts.
     """
     posts = []
 
@@ -256,7 +272,7 @@ def _populate_post_metadata(
             post.index_image = image_file_names[0]
             post.thumbnail_parent_url = Path("/") / post.fs_image_dir.relative_to(site_dir)
         posts.append(post)
-    # Ensure we are ordered cronologically
+    # Ensure we are ordered chronologically
     posts.sort(key=lambda x: x.date)
 
     return posts
@@ -333,7 +349,9 @@ def convert_all_html(
     """Convert all posts to html.
 
     Args:
-        post_name: The name of the post to build.
+        site_dir: The directory of the site.
+        post_id: The name of the post to build.
+
     Returns:
         The number of posts built.
     """
@@ -359,6 +377,9 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     Args:
         request: The request.
         posts_dir: The directory of the posts.
+
+    Returns:
+        The new post.
     """
     now = datetime.now()
     now_iso = datetime.now(timezone.utc).astimezone().isoformat()
@@ -395,6 +416,7 @@ def write_index(posts: list[ExistingPost], site_dir: Path) -> None:
 
     Args:
         posts: The posts.
+        site_dir: The directory of the site.
     """
     path = site_dir / "index.html"
     template = jinja_env.get_template("index.html.j2")
@@ -403,14 +425,15 @@ def write_index(posts: list[ExistingPost], site_dir: Path) -> None:
     path.write_text(rendered, encoding="utf-8")
 
 
-def write_tag_indicies(posts: list[ExistingPost], site_dir: Path) -> None:
+def write_tag_indices(posts: list[ExistingPost], site_dir: Path) -> None:
     """Write the tag files.
 
     Args:
         posts: The posts.
+        site_dir: The directory of the site.
     """
     tag_dir = site_dir / "tags"
-    # Start with fresh tag indicies
+    # Start with fresh tag indices
     shutil.rmtree(tag_dir, ignore_errors=True)
 
     all_tags: dict[str, list[ExistingPost]] = {}
@@ -429,14 +452,15 @@ def write_tag_indicies(posts: list[ExistingPost], site_dir: Path) -> None:
         path.write_text(rendered, encoding="utf-8")
 
 
-def write_author_indicies(posts: list[ExistingPost], site_dir: Path) -> None:
+def write_author_indices(posts: list[ExistingPost], site_dir: Path) -> None:
     """Write the author files.
 
     Args:
         posts: The posts.
+        site_dir: The directory of the site.
     """
     author_dir = site_dir / "authors"
-    # Start with fresh author indicies
+    # Start with fresh author indices
     shutil.rmtree(author_dir, ignore_errors=True)
 
     all_authors: dict[str, list[ExistingPost]] = {}
@@ -459,7 +483,10 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
     """Build thumbnails for the post.
 
     Args:
-        post: The post to build thumbnails for.
+        posts: The post to build thumbnails for.
+
+    Raises:
+        ValueError: If the thumbnail URL is not set.
     """
     for post in posts:
         image_dir = post.fs_image_dir

@@ -1,162 +1,150 @@
 .main {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5vw;
-    justify-content: space-evenly;
-    padding: 0rem;
-    /* background-color: #1F1F1F; */
-    border-radius: 1rem;
-    overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5vw;
+  justify-content: space-evenly;
+  padding: 0rem;
+  /* background-color: #1F1F1F; */
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
 @media screen and (max-width: 767px) {
-    .main {
-        gap: 0vw;
-    }
+  .main {
+    gap: 0vw;
+  }
 }
 
-
 .page-title {
-    padding-left: .5rem;
-    padding-right: .5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 main.responsive {
-    padding: 0rem;
+  padding: 0rem;
 }
-
 
 .main .post {
-    flex-grow: 1;
-    max-width: 33vw;
+  flex-grow: 1;
+  max-width: 33vw;
 }
 
 @media screen and (max-width: 767px) {
-    .main .post {
-        min-width: 100%;
-    }
+  .main .post {
+    min-width: 100%;
+  }
 }
 
 @media screen and (max-width: 767px) {
-    .main article {
-        border-bottom: solid rgb(96, 96, 96) 1px;
-    }
+  .main article {
+    border-bottom: solid rgb(96, 96, 96) 1px;
+  }
 }
-
 
 .main .post article:hover {
-    filter: brightness(130%);
+  filter: brightness(130%);
 }
 
 .article-image {
-    border-radius: .75rem;
+  border-radius: 0.75rem;
 }
 
 .article-meta {
-    padding-top: .5rem;
+  padding-top: 0.5rem;
 }
 
 .main a {
-    width: inherit;
+  width: inherit;
 }
 
 article {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 article.new-post {
-    padding: .5rem;
+  padding: 0.5rem;
 }
 
 article.single-post {
-    padding-top: 1rem;
-    padding-left: .75rem;
-    padding-right: .75rem;
-    padding-bottom: .75rem;
-    border-radius: 0rem;
+  padding-top: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-radius: 0rem;
 }
 
 article.with-image {
-    padding-top: 1rem;
-    padding-left: .75rem;
-    padding-right: .75rem;
-    padding-bottom: 0rem;
-    border-radius: 0rem;
+  padding-top: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0rem;
+  border-radius: 0rem;
 }
 
 article.without-image {
-    padding-top: 1rem;
-    padding-left: .75rem;
-    padding-right: .75rem;
-    padding-bottom: 0rem;
-    padding-top: .5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    min-height: 10dvh;
-    border-radius: 0rem;
-
+  padding-top: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0rem;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  min-height: 10dvh;
+  border-radius: 0rem;
 }
 
 .deemphasisze {
-    display: inline;
-    text-transform: uppercase;
-    font-size: .7em;
-    font-weight: bold;
-    color: rgb(96, 96, 96);
+  display: inline;
+  text-transform: uppercase;
+  font-size: 0.7em;
+  font-weight: bold;
+  color: rgb(96, 96, 96);
 }
 
 @media screen and (max-width: 767px) {
-    .deemphasisze {
-        font-size: .9em;
-    }
+  .deemphasisze {
+    font-size: 0.9em;
+  }
 }
-
 
 article .markdown-body img {
-    object-fit: cover;
-    object-position: center;
-    max-height: 80dvh;
-    max-width: 100%;
-    text-align: center;
-    border-radius: .75rem;
+  object-fit: cover;
+  object-position: center;
+  max-height: 80dvh;
+  max-width: 100%;
+  text-align: center;
+  border-radius: 0.75rem;
 }
 
-
 article .markdown-body p {
-    text-align: left;
-    margin-bottom: 1em;
-
+  text-align: left;
+  margin-bottom: 1em;
 }
 
 article .markdown-body p:has(img) {
-    text-align: center;
-    margin-bottom: 0em;
-
+  text-align: center;
+  margin-bottom: 0em;
 }
 
-
-
-
-/* 
+/*
 .middle-align {
     flex-direction: column;
 } */
 
-
 .fab-container {
-    position: fixed;
-    bottom: 40px;
-    right: 30px;
-    cursor: pointer;
+  position: fixed;
+  bottom: 40px;
+  right: 30px;
+  cursor: pointer;
 }
 
 .lightense-backdrop {
-    background-color: #000000 !important;
+  background-color: #000000 !important;
 }
 
 .author_link {
-    font-weight: bold;
-    color: rgb(96, 96, 96);
+  font-weight: bold;
+  color: rgb(96, 96, 96);
 }
