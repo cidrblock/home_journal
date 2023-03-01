@@ -1,5 +1,8 @@
-![](screenshots/main-small.png)
-![](screenshots/new-small.png)
+![](screenshots/resized-0.png)
+![](screenshots/resized-1.png)
+![](screenshots/resized-2.png)
+![](screenshots/resized-3.png)
+![](screenshots/resized-4.png)
 
 # Home Journal
 
