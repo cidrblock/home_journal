@@ -40,7 +40,12 @@
                                 <label>Title</label>
                             </div>
                         </div>
-
+                        <div class="s12">
+                            <div class="field label border round">
+                                <input type="text" name="author" id="author" required autocomplete="name">
+                                <label>Author</label>
+                            </div>
+                        </div>
                         {% if tags %}
                         <div class="s12">
                             <span style="font-size: 1rem" ;>Common tags</span>
@@ -77,7 +82,8 @@
                             </div>
                         </div>
                         <div class="s12">
-                            <button class="absolute right circle extra" type="submit"><i>arrow_forward</i></button>
+                            <button class="absolute right circle extra" type="submit"
+                                onclick="store()"><i>arrow_forward</i></button>
                         </div>
                     </div>
                 </form>

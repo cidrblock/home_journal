@@ -11,7 +11,9 @@
             "module": "home_journal",
             "args": [
                 "-sd",
-                "/space8/home_journal_site",
+                "/space8/home_journal/sample_site",
+                "-p",
+                "9000"
             ],
             "justMyCode": true,
             "cwd": "${workspaceFolder}/src"

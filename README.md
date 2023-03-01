@@ -40,7 +40,6 @@ I had an old wordpress blog that I convertered to markdown files and needed a wa
 
 - Support for videos and other file types
 - Roll it in a container
-- Author, attribution support
 
 ## Installation
 

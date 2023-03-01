@@ -44,10 +44,17 @@ class BasePost:
     # The title of the post
     title: str
 
+    # The author of the post
+    author: str = ""
     # The next post url
     next: Path | None = None
     # The previous post url
     previous: Path | None = None
+
+    def __post_init__(self) -> None:
+        """Post init."""
+        if not self.author:
+            self.author = "Unknown"
 
     @property
     def fs_image_dir(self) -> Path:
@@ -72,6 +79,11 @@ class ExistingPost(BasePost):
     thumbnail_parent_url: Path | None = None
     # The url for the thumbnail image
     thumbnail_url: Path | None = None
+
+    @property
+    def author_index(self) -> Path:
+        """Get the author index url."""
+        return f"{_slugify(self.author)}.html"
 
     def write_html(self) -> None:
         """Write the post to an HTML file.
@@ -107,6 +119,7 @@ class NewPost(BasePost):
             The post metadata as a dictionary.
         """
         include = {
+            "author": self.author,
             "date": str(self.date),
             "image_file_names": self.image_file_names,
             "post_id": self.post_id,
@@ -230,6 +243,7 @@ def _populate_post_metadata(
         categories = parsed_post.metadata.get("categories", [])
 
         post = ExistingPost(
+            author=parsed_post.get("author", ""),
             date=date,
             fs_post_directory=path.parent,
             md_content=parsed_post.content,
@@ -354,6 +368,7 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     dir_path = posts_dir / str(now.year) / str(now.month).zfill(2) / post_id
 
     post = NewPost(
+        author=request.form["author"],
         date=now,
         image_file_names=[],
         fs_post_directory=dir_path,
@@ -411,6 +426,32 @@ def write_tag_indicies(posts: list[ExistingPost], site_dir: Path) -> None:
         path = tag_index_path / f"{_slugify(tag)}.html"
         template = jinja_env.get_template("index.html.j2")
         rendered = template.render(posts=matching_posts, title=tag)
+        path.write_text(rendered, encoding="utf-8")
+
+
+def write_author_indicies(posts: list[ExistingPost], site_dir: Path) -> None:
+    """Write the author files.
+
+    Args:
+        posts: The posts.
+    """
+    author_dir = site_dir / "authors"
+    # Start with fresh author indicies
+    shutil.rmtree(author_dir, ignore_errors=True)
+
+    all_authors: dict[str, list[ExistingPost]] = {}
+    for post in posts:
+        author = post.author
+        if author not in all_authors:
+            all_authors[author] = []
+        all_authors[author].append(post)
+
+    for author, matching_posts in all_authors.items():
+        author_index_path = Path(author_dir)
+        author_index_path.mkdir(parents=True, exist_ok=True)
+        path = author_index_path / f"{_slugify(author)}.html"
+        template = jinja_env.get_template("index.html.j2")
+        rendered = template.render(posts=matching_posts, title=author)
         path.write_text(rendered, encoding="utf-8")
 
 

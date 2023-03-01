@@ -15,6 +15,7 @@ from waitress import serve
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import initialize_new_post
+from .utils import write_author_indicies
 from .utils import write_index
 from .utils import write_tag_indicies
 
@@ -44,6 +45,7 @@ def endpoint_convert_all() -> str:
     revised, all_posts = convert_all_html(app.config["site_dir"])
     build_thumbnails(all_posts)
     write_index(all_posts, site_dir=app.config["site_dir"])
+    write_author_indicies(all_posts, site_dir=app.config["site_dir"])
     write_tag_indicies(all_posts, site_dir=app.config["site_dir"])
     return f"Built {len(revised)} of {len(all_posts)} posts."
 
@@ -62,12 +64,12 @@ def endpoint_post() -> "BaseResponse":
     )
     build_thumbnails(all_posts)
     write_index(all_posts, site_dir=site_dir)
+    write_author_indicies(all_posts, site_dir=site_dir)
     write_tag_indicies(all_posts, site_dir=site_dir)
-
     return redirect(post.fs_post_full_html_path.relative_to(site_dir).as_posix())
 
 
-def list_tags(values):
+def list_tags(values: str) -> list[str]:
     """Split a comma separated list of tags.
 
     Args:

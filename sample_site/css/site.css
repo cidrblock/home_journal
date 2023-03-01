@@ -155,3 +155,8 @@ article .markdown-body p:has(img) {
 .lightense-backdrop {
     background-color: #000000 !important;
 }
+
+.author_link {
+    font-weight: bold;
+    color: rgb(96, 96, 96);
+}
