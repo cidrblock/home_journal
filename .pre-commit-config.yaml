@@ -1,0 +1,118 @@
+---
+default_language_version:
+  # ensures that we get same behavior on CI(s) as on local machines
+  python: python3.11
+repos:
+  - repo: https://github.com/asottile/add-trailing-comma.git
+    rev: v2.4.0
+    hooks:
+      - id: add-trailing-comma
+        args:
+          - --py36-plus
+        stages: ["manual"]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: Sort import statements using isort
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.0.0-alpha.4"
+    hooks:
+      - id: prettier
+        additional_dependencies:
+          - prettier
+          - prettier-plugin-toml
+
+  - repo: https://github.com/psf/black.git
+    rev: 23.1.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v6.27.0
+    hooks:
+      - id: cspell
+        name: Spell check with cspell
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks.git
+    rev: v1.4.2
+    hooks:
+      - id: remove-tabs
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: v4.4.0
+    hooks:
+      # Side-effects:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: requirements-txt-fixer
+      - id: check-added-large-files
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: detect-private-key
+
+      # Heavy checks:
+      - id: check-ast
+      - id: debug-statements
+
+  - repo: https://gitlab.com/bmares/check-json5
+    # Allow json comments, trailing commas
+    # https://github.com/pre-commit/pre-commit-hooks/issues/395
+    rev: v1.0.0
+    hooks:
+      - id: check-json5
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.2
+    hooks:
+      - id: codespell
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.29.0
+    hooks:
+      - id: yamllint
+        args:
+          - --strict
+        types: [file, yaml]
+
+  - repo: https://github.com/PyCQA/flake8.git
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        alias: flake8
+        language_version: python3
+        additional_dependencies:
+          - flake8-2020 >= 1.6.0
+          - flake8-isort >= 4.1.1
+          - darglint
+          - flake8-docstrings
+  - repo: https://github.com/pre-commit/mirrors-mypy.git
+    rev: v1.0.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pytest
+          - types-PyYAML
+          - types-waitress
+          - types-Flask
+
+  - repo: https://github.com/pycqa/pylint.git
+    rev: v2.16.2
+    hooks:
+      - id: pylint
+        args:
+          - src/
+        additional_dependencies:
+          - cmarkgfm
+          - flask
+          - pillow
+          - pytest
+          - python-frontmatter
+          - waitress
+        pass_filenames: false

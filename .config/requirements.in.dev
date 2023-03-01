@@ -1,11 +1,14 @@
 black
 cmarkgfm
+darglint
 flake8
+flake8-2020 >= 1.6.0
 flake8-docstrings
+flake8-isort >= 4.1.1
 flake8-pydocstyle
 flask
 mypy
-pillow
+pre-commit
 pylint
 python-frontmatter
 types-PyYAML

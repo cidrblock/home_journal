@@ -1,13 +1,11 @@
-
 ![](screenshots/main-small.png)
 ![](screenshots/new-small.png)
 
-
 # Home Journal
 
-A self-hosted mini journaling site for familes for capturing memories.
+A self-hosted mini journaling site for families for capturing memories.
 
-I had an old wordpress blog that I convertered to markdown files and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:
+I had an old wordpress blog that I converted to markdown files and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:
 
 - Mobile friendly and easy to post from mobile
 - Need to look and feel like a mobile app
@@ -20,7 +18,7 @@ I had an old wordpress blog that I convertered to markdown files and needed a wa
 - Minimal dependencies
 - No need to edit posts from the UI
 - No need to delete posts from the UI
-- Ability to regernate all html files
+- Ability to regenerate all html files
 - Ability to add new posts with a text editor
 
 ## What's working

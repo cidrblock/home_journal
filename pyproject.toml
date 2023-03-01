@@ -1,31 +1,31 @@
 [build-system]
 requires = [
   "setuptools >= 63.0.0", # required by pyproject+setuptools_scm integration
-]
 
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "home_journal"
 dynamic = ["dependencies"]
 description = "A simple journal for use at home by the family"
-authors = [{"name" = "Bradley A. Thornton"}]
-license = {text = "MIT"}
+authors = [{ "name" = "Bradley A. Thornton" }]
+license = { text = "MIT" }
 requires-python = ">=3.11"
 readme = "README.md"
 version = "0.0.1"
-classifiers =[
-    "Development Status :: 3 - Alpha",
-    "Framework :: Flask",
-    "License :: OSI Approved :: MIT License",
-    "Natural Language :: English",
-    "Operating System :: MacOS",
-    "Operating System :: POSIX",    
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: Flask",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy"
 ]
 
 [project.scripts]
@@ -55,11 +55,11 @@ error_summary = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 disallow_any_generics = true
+
 # disallow_any_unimported = True
 # warn_redundant_casts = True
 # warn_return_any = True
 # warn_unused_configs = True
-
 [tool.pylint]
 
 [tool.pylint.format]

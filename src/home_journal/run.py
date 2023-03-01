@@ -15,44 +15,60 @@ from waitress import serve
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import initialize_new_post
-from .utils import write_author_indicies
+from .utils import write_author_indices
 from .utils import write_index
-from .utils import write_tag_indicies
+from .utils import write_tag_indices
 
 
 if TYPE_CHECKING:
     from werkzeug.wrappers import Response as BaseResponse
 
 
-app = Flask(__name__, static_url_path="", template_folder=Path(__file__).parent / "templates")
+app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
 
 
 @app.route("/")
 def endpoint_root() -> Response:
-    """Serve the index.html file from the static folder."""
+    """Serve the index.html file from the static folder.
+
+    Returns:
+        The index.html file.
+    """
     return app.send_static_file("index.html")
 
 
 @app.route("/new.html")
 def endpoint_new() -> Response:
-    """Serve the index.html file from the static folder."""
+    """Serve the index.html file from the static folder.
+
+    Returns:
+        The new.html file with the tags.
+    """
     return Response(render_template("new.html.j2", tags=app.config["tags"]))
 
 
 @app.route("/all")
 def endpoint_convert_all() -> str:
-    """Serve the index.html file from the static folder."""
+    """Serve the index.html file from the static folder.
+
+    Returns:
+        The count of posts converted.
+    """
     revised, all_posts = convert_all_html(app.config["site_dir"])
     build_thumbnails(all_posts)
     write_index(all_posts, site_dir=app.config["site_dir"])
-    write_author_indicies(all_posts, site_dir=app.config["site_dir"])
-    write_tag_indicies(all_posts, site_dir=app.config["site_dir"])
+    write_author_indices(all_posts, site_dir=app.config["site_dir"])
+    write_tag_indices(all_posts, site_dir=app.config["site_dir"])
     return f"Built {len(revised)} of {len(all_posts)} posts."
 
 
 @app.route("/", methods=["POST"])
 def endpoint_post() -> "BaseResponse":
-    """Create a new post from the form data and redirect to it."""
+    """Create a new post from the form data and redirect to it.
+
+    Returns:
+        A redirect to the new post.
+    """
     site_dir = app.config["site_dir"]
     posts_dir = app.config["site_dir"] / "posts"
     post = initialize_new_post(request=request, posts_dir=posts_dir)
@@ -64,8 +80,8 @@ def endpoint_post() -> "BaseResponse":
     )
     build_thumbnails(all_posts)
     write_index(all_posts, site_dir=site_dir)
-    write_author_indicies(all_posts, site_dir=site_dir)
-    write_tag_indicies(all_posts, site_dir=site_dir)
+    write_author_indices(all_posts, site_dir=site_dir)
+    write_tag_indices(all_posts, site_dir=site_dir)
     return redirect(post.fs_post_full_html_path.relative_to(site_dir).as_posix())
 
 
@@ -74,6 +90,7 @@ def list_tags(values: str) -> list[str]:
 
     Args:
         values: A comma separated list of tags.
+
     Returns:
         A list of tags.
     """

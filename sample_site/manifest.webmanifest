@@ -1,32 +1,30 @@
 {
-    "lang": "en-us",
-    "name": "Home Journal",
-    "short_name": "Home Journal",
-    "description": "Our home journal",
-    "start_url": "/",
-    "background_color": "#000000",
-    // "theme_color": "#00008B",
-    "orientation": "any",
-    "display": "standalone",
-    "icons": [
-        {
-            "src": "/icons/icon-8.png",
-            "sizes": "512x512"
-        }
-    ],
-    "share_target": {
-        "action": "/?share-target=1",
-        "enctype": "multipart/form-data",
-        "method": "POST",
-        "params": {
-            "files": [
-                {
-                    "name": "files",
-                    "accept": [
-                        "image/*"
-                    ]
-                }
-            ]
-        }
+  "lang": "en-us",
+  "name": "Home Journal",
+  "short_name": "Home Journal",
+  "description": "Our home journal",
+  "start_url": "/",
+  "background_color": "#000000",
+  // "theme_color": "#00008B",
+  "orientation": "any",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/icons/icon-8.png",
+      "sizes": "512x512"
     }
+  ],
+  "share_target": {
+    "action": "/?share-target=1",
+    "enctype": "multipart/form-data",
+    "method": "POST",
+    "params": {
+      "files": [
+        {
+          "name": "files",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  }
 }
