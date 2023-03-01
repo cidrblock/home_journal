@@ -60,7 +60,7 @@ repos:
       # Heavy checks:
       - id: check-ast
       - id: debug-statements
-  
+
   - repo: https://gitlab.com/bmares/check-json5
     # Allow json comments, trailing commas
     # https://github.com/pre-commit/pre-commit-hooks/issues/395
@@ -91,8 +91,7 @@ repos:
           - flake8-2020 >= 1.6.0
           - flake8-isort >= 4.1.1
           - darglint
-          - flake8-docstrings # uses pydocstyle
-
+          - flake8-docstrings
   - repo: https://github.com/pre-commit/mirrors-mypy.git
     rev: v1.0.1
     hooks:
@@ -102,7 +101,6 @@ repos:
           - types-PyYAML
           - types-waitress
           - types-Flask
-
 
   - repo: https://github.com/pycqa/pylint.git
     rev: v2.16.2
