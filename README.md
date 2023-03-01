@@ -6,7 +6,14 @@
 
 # Home Journal
 
-A self-hosted mini journaling site for families for capturing memories.
+A self-hosted mini journaling site for families for capturing
+
+- memories
+- stories
+- photos
+- ideas
+- jokes
+- and anything else you want to remember
 
 I had an old wordpress blog that I converted to markdown files and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:
 
@@ -40,7 +47,6 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 ## Future enhancements
 
 - Support for videos and other file types
-- Roll it in a container
 
 ## Installation
 
