@@ -10,4 +10,4 @@ title: These are people
 
 In the street
 
-![](images/16775273549102872817857611594116.jpg)
+![](media/16775273549102872817857611594116.jpg)

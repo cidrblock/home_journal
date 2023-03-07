@@ -10,4 +10,4 @@ title: This is a boat
 
 It does not look fast.
 
-![](images/16775272411997864948330343743369.jpg)
+![](media/16775272411997864948330343743369.jpg)
