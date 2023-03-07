@@ -43,6 +43,8 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - Rebuild static html files (http://your.server/all)
 - Static files for all but new entry submission
 - Github style markdown formatting
+- Video uploads
+- Splitting Google motion photos into stills and video
 
 ## Future enhancements
 

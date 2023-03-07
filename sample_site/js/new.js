@@ -49,7 +49,13 @@ window.onload = function (e) {
       false
     );
 
-    xhr.upload.addEventListener("load", function (event) {}, false);
+    xhr.upload.addEventListener(
+      "load",
+      function (event) {
+        progress_text.innerText = "Processing";
+      },
+      false
+    );
 
     xhr.addEventListener(
       "readystatechange",

@@ -17,6 +17,8 @@ gruber
 journaling
 jstar
 kanye
+levelname
+libx
 liga
 lightense
 list_tagswerkzeug
@@ -27,6 +29,7 @@ quicktime
 roboto
 strikethrough
 stylesheet
+subproc
 tada
 tunghsiao
 werkzeug
