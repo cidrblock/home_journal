@@ -148,3 +148,7 @@ article .markdown-body p:has(img) {
   font-weight: bold;
   color: rgb(96, 96, 96);
 }
+
+.modal_status {
+  top: 30%;
+}
