@@ -118,6 +118,18 @@ article .markdown-body img {
   border-radius: 0.75rem;
 }
 
+article .markdown-body .video {
+  display: flex;
+  justify-content: center;
+}
+
+article .markdown-body video {
+  max-height: 80dvh;
+  max-width: 100%;
+  min-width: 100%;
+  border-radius: 0.75rem;
+}
+
 article .markdown-body p {
   text-align: left;
   margin-bottom: 1em;
