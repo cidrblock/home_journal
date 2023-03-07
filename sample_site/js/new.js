@@ -5,7 +5,7 @@ if (navigator.serviceWorker) {
     for (var i = 0; i < files.length; i++) {
       dataTransfer.items.add(files[i]);
     }
-    file_input = document.getElementById("images");
+    file_input = document.getElementById("media");
     file_input.files = dataTransfer.files;
     file_input.dispatchEvent(new Event("change", { bubbles: true }));
   });
