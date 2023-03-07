@@ -1,5 +1,6 @@
 """Form to post."""
 import argparse
+import logging
 import pathlib
 
 from pathlib import Path
@@ -20,11 +21,12 @@ from .utils import write_index
 from .utils import write_tag_indices
 
 
+app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
+logger = logging.getLogger("home_journal.main")
+
+
 if TYPE_CHECKING:
     from werkzeug.wrappers import Response as BaseResponse
-
-
-app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
 
 
 @app.route("/")
@@ -117,10 +119,12 @@ def main() -> None:
     parser.add_argument("-t", "--tags", help="A list of tags for new posts", type=list_tags)
 
     args = parser.parse_args()
+    logger.debug(args)
     app.config["site_dir"] = pathlib.Path(args.site_directory)
     app.config["tags"] = args.tags
     app.static_folder = args.site_directory
 
+    logger.info("Starting server")
     serve(app, host="0.0.0.0", port=args.port, threads=8)
 
 

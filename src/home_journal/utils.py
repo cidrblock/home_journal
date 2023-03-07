@@ -1,11 +1,14 @@
 """Helper utilities."""
+import logging
 import re
 import shutil
+import subprocess
 import unicodedata
 
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
+from mmap import mmap
 from pathlib import Path
 from typing import Generator
 
@@ -24,6 +27,8 @@ from PIL import ImageOps
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
 )
+
+logger = logging.getLogger("home_journal.utils")
 
 
 @dataclass(kw_only=True)
@@ -215,6 +220,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
     Raises:
         ValueError: If the image directory is not set.
     """
+    # pylint: disable=too-many-locals
     if not post.fs_media_dir:
         raise ValueError("fs_media_dir is not set")
     post.fs_media_dir.mkdir(exist_ok=True, parents=True)
@@ -225,11 +231,67 @@ def _extract_images(post: NewPost, request: Request) -> None:
             continue
         if not isinstance(media.filename, str):
             continue
+
         # Make minimal changes to the filename
         filename = media.filename.replace(" ", "_")
         media_path = post.fs_media_dir / filename
         media.save(media_path)
-        post.media_file_names.append(filename)
+
+        logger.debug(media)
+        mimetype = magic.from_file(media_path, mime=True)
+        logger.debug(mimetype)
+        if mimetype.startswith("image/"):
+            eop = b"\x66\x74\x79\x70\x69\x73\x6F\x6D"
+            with media_path.open("r+b") as image:
+                mem_map = mmap(image.fileno(), 0)
+                file_size = mem_map.size()
+                place = mem_map.find(eop)
+                place_lim = file_size - len(eop)
+                if place in (-1, place_lim):
+                    post.media_file_names.append(filename)
+                    return
+                offset = place - 4
+
+                mem_map.seek(0)
+                jpeg = mem_map.read(offset)
+
+                mem_map.seek(offset)
+                mp4 = mem_map.read(file_size)
+
+                file_base = media_path.stem
+                jpeg_path = post.fs_media_dir / ("ex_" + file_base + ".jpg")
+                with jpeg_path.open("w+b") as jpeg_file:
+                    jpeg_file.write(jpeg)
+                post.media_file_names.append(jpeg_path.name)
+
+                mp4_orig_path = post.fs_media_dir / ("ex_orig_" + file_base + ".mp4")
+                with mp4_orig_path.open("w+b") as mp4_file:
+                    mp4_file.write(mp4)
+                mp4_h264_path = post.fs_media_dir / ("ex_h264_" + file_base + ".mp4")
+
+                _subproc = subprocess.run(
+                    [
+                        "ffmpeg",
+                        "-i",
+                        str(mp4_orig_path),
+                        "-map",
+                        "0:0",
+                        "-c:v",
+                        "libx264",
+                        "-crf",
+                        "18",
+                        "-c:a",
+                        "copy",
+                        str(mp4_h264_path),
+                    ],
+                    check=False,
+                )
+                logger.debug(_subproc.stderr)
+                logger.debug(_subproc.stdout)
+                post.media_file_names.append(mp4_h264_path.name)
+
+        else:
+            post.media_file_names.append(filename)
 
 
 def _populate_post_metadata(
