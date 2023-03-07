@@ -10,4 +10,4 @@ title: This is nature
 
 It looks peaceful.
 
-![](images/16775272985681743221999074992096.jpg)
+![](media/16775272985681743221999074992096.jpg)

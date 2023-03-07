@@ -57,13 +57,13 @@ class BasePost:
             self.author = "Unknown"
 
     @property
-    def fs_image_dir(self) -> Path:
+    def fs_media_dir(self) -> Path:
         """Get the full path to the image directory.
 
         Returns:
             The full path to the image directory.
         """
-        return self.fs_post_directory / "images"
+        return self.fs_post_directory / "media"
 
     @property
     def fs_post_full_html_path(self) -> Path:
@@ -109,8 +109,8 @@ class ExistingPost(BasePost):
 class NewPost(BasePost):
     """Metadata for a post."""
 
-    # The filename for each of the images
-    image_file_names: list[str]
+    # The filename for each attachment
+    media_file_names: list[str]
 
     @property
     def fs_post_full_md_path(self) -> Path:
@@ -133,7 +133,7 @@ class NewPost(BasePost):
         include = {
             "author": self.author,
             "date": str(self.date),
-            "image_file_names": self.image_file_names,
+            "media_file_names": self.media_file_names,
             "post_id": self.post_id,
             "tags": self.tags,
             "title": self.title,
@@ -141,22 +141,22 @@ class NewPost(BasePost):
         return yaml.dump(include, default_flow_style=False)  # type: ignore[no-any-return]
 
     @property
-    def relative_image_path(self) -> Path:
+    def relative_media_path(self) -> Path:
         """Get the relative path to the image directory.
 
         Returns:
             The relative path to the image directory.
         """
-        return self.fs_image_dir.relative_to(self.fs_post_directory)
+        return self.fs_media_dir.relative_to(self.fs_post_directory)
 
     @property
-    def relative_image_paths(self) -> list[Path]:
+    def relative_media_paths(self) -> list[Path]:
         """Get the relative paths to the images.
 
         Returns:
             The relative paths to the images.
         """
-        return [self.relative_image_path / image for image in self.image_file_names]
+        return [self.relative_media_path / media for media in self.media_file_names]
 
     def write_md(self) -> None:
         """Write the post to a markdown file."""
@@ -214,19 +214,21 @@ def _extract_images(post: NewPost, request: Request) -> None:
     Raises:
         ValueError: If the image directory is not set.
     """
-    if not post.fs_image_dir:
-        raise ValueError("fs_image_dir is not set")
-    post.fs_image_dir.mkdir(exist_ok=True, parents=True)
+    if not post.fs_media_dir:
+        raise ValueError("fs_media_dir is not set")
+    post.fs_media_dir.mkdir(exist_ok=True, parents=True)
 
-    images = request.files.getlist("images")
-    for image in images:
-        if image:
-            if isinstance(image.filename, str):
-                image_path = Path(image.filename)
-                image_filename = _slugify(image_path.stem) + image_path.suffix.lower()
-                image_path = post.fs_image_dir / image_filename
-                image.save(image_path)
-                post.image_file_names.append(image_filename)
+    all_media = request.files.getlist("media")
+    for media in all_media:
+        if not media:
+            continue
+        if not isinstance(media.filename, str):
+            continue
+        # Make minimal changes to the filename
+        filename = media.filename.replace(" ", "_")
+        media_path = post.fs_media_dir / filename
+        media.save(media_path)
+        post.media_file_names.append(filename)
 
 
 def _populate_post_metadata(
@@ -270,7 +272,7 @@ def _populate_post_metadata(
         post.post_url = Path("/") / post.fs_post_full_html_path.relative_to(site_dir)
         if image_file_names:
             post.index_image = image_file_names[0]
-            post.thumbnail_parent_url = Path("/") / post.fs_image_dir.relative_to(site_dir)
+            post.thumbnail_parent_url = Path("/") / post.fs_media_dir.relative_to(site_dir)
         posts.append(post)
     # Ensure we are ordered chronologically
     posts.sort(key=lambda x: x.date)
@@ -391,7 +393,7 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     post = NewPost(
         author=request.form["author"],
         date=now,
-        image_file_names=[],
+        media_file_names=[],
         fs_post_directory=dir_path,
         md_content="",
         post_id=post_id,
@@ -404,7 +406,7 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     template = jinja_env.get_template("post.md.j2")
     post.md_content = template.render(
         content=request.form["content"],
-        images=post.relative_image_paths,
+        images=post.relative_media_paths,
         md_header=post.md_header,
     )
 
@@ -489,7 +491,7 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
         ValueError: If the thumbnail URL is not set.
     """
     for post in posts:
-        image_dir = post.fs_image_dir
+        image_dir = post.fs_media_dir
         index_image = post.index_image
         if not index_image:
             continue

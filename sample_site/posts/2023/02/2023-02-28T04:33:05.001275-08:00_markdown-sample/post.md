@@ -119,10 +119,10 @@ _You **can** combine them_
 
 ```markdown
 Format: ![Alt Text](url)
-Example: ![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
+Example: ![Image of Yaktocat](https://octodex.github.com/media/yaktocat.png)
 ```
 
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
+![Image of Yaktocat](https://octodex.github.com/media/yaktocat.png)
 
 ## Links
 
@@ -336,4 +336,4 @@ Markdown also supports raw HTML.
 
 :+1: :sparkles: :camel: :tada: :rocket: :metal:
 
-![](images/yaktocat.png)
+![](media/yaktocat.png)
