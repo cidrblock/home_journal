@@ -11,6 +11,7 @@ from typing import Generator
 
 import cmarkgfm
 import jinja2
+import magic
 import yaml
 
 from cmarkgfm.cmark import Options as cmarkgfmOptions
@@ -404,9 +405,25 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     _extract_images(post=post, request=request)
 
     template = jinja_env.get_template("post.md.j2")
+
+    mimes: dict[str, list[tuple[Path, str]]] = {}
+    for media in post.media_file_names:
+        path = post.fs_media_dir / media
+        mime = magic.from_file(path, mime=True)
+        mime_type, _mime_subtype = mime.split("/")
+        if mime_type not in mimes:
+            mimes[mime_type] = []
+        mimes[mime_type].append(
+            (
+                post.relative_media_path / media,
+                mime,
+            )
+        )
+
     post.md_content = template.render(
         content=request.form["content"],
-        images=post.relative_media_paths,
+        images=mimes.get("image", []),
+        videos=mimes.get("video", []),
         md_header=post.md_header,
     )
 

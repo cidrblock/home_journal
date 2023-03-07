@@ -114,6 +114,7 @@ repos:
           - flask
           - pillow
           - pytest
+          - python-magic
           - python-frontmatter
           - waitress
         pass_filenames: false
