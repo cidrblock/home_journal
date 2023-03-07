@@ -2,4 +2,5 @@ cmarkgfm
 flask
 pillow
 python-frontmatter
+python-magic
 waitress

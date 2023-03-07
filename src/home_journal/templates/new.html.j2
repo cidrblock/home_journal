@@ -27,16 +27,25 @@
         <div>New</div>
       </a>
     </nav>
+    <div class="modal modal_status" id="status">
+      <h5>Submitting</h5>
+      <div>Progress: <span id="progress_text"></span></div>
+      <div class="small-space"></div>
+      <div class="small-space border">
+        <div class="progress left" id="progress"></div>
+      </div>
+    </div>
     <main
       class="responsive"
       style="min-height: 100dvh; display: flex; flex-direction: column;"
     >
-      <div class=" s12 page-title">
+      <div class="s12 page-title">
         <h2>post</h2>
       </div>
       <div
         class="s12"
         style="flex-grow: 1; display: flex; flex-direction: column;"
+        id="main_body"
       >
         <article class="new-post" style=" flex-grow: 1;">
           <form
@@ -96,8 +105,8 @@
                 <div class="field label prefix border round">
                   <i>attach_file</i>
                   <input type="text" />
-                  <input type="file" name="images" id="images" multiple />
-                  <label>Images</label>
+                  <input type="file" name="media" id="media" multiple />
+                  <label>Media</label>
                 </div>
               </div>
               <div class="s12">

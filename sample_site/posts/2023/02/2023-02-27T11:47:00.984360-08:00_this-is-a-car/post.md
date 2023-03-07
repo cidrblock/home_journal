@@ -10,4 +10,4 @@ title: This is a car
 
 It looks fast.
 
-![](images/167752720395136125000134595394.jpg)
+![](media/167752720395136125000134595394.jpg)

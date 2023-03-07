@@ -12,14 +12,57 @@ if (navigator.serviceWorker) {
 }
 
 function store() {
-  console.log("here");
   var author = document.getElementById("author");
   localStorage.setItem("author", author.value);
-  console.log(author);
 }
 
 window.onload = function (e) {
   var author = document.getElementById("author");
   author.value = localStorage.getItem("author");
-  console.log(author);
+
+  document.getElementById("form").addEventListener("submit", function (e) {
+    //prevent regular form posting
+    e.preventDefault();
+    var xhr = new XMLHttpRequest();
+    var status = document.getElementById("status");
+    var main_body = document.getElementById("main_body");
+    var progress_text = document.getElementById("progress_text");
+
+    xhr.upload.addEventListener(
+      "loadstart",
+      function (event) {
+        status.style.visibility = "visible";
+        status.style.opacity = "100%";
+        main_body.style.opacity = "20%";
+        progress_text.innerText = "Starting";
+      },
+      false
+    );
+
+    xhr.upload.addEventListener(
+      "progress",
+      function (event) {
+        var percent = (100 * event.loaded) / event.total;
+        ui("#progress", percent);
+        progress_text.innerText = Math.round(percent) + "%";
+      },
+      false
+    );
+
+    xhr.upload.addEventListener("load", function (event) {}, false);
+
+    xhr.addEventListener(
+      "readystatechange",
+      function (event) {
+        if (event.target.readyState == 4) {
+          ui("#progress", 100);
+          window.location.replace(event.currentTarget.responseURL);
+        }
+      },
+      false
+    );
+
+    xhr.open(this.getAttribute("method"), this.getAttribute("action"), true);
+    xhr.send(new FormData(this));
+  });
 };
