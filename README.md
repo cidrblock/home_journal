@@ -1,6 +1,8 @@
-<img src="screenshots/resized-0.png" witdth="25dvw"><img src="screenshots/resized-1.png" witdth="25dvw"><img src="screenshots/resized-2.png" witdth="25dvw">
-<img src="screenshots/resized-3.png" witdth="25dvw">
-<img src="screenshots/resized-4.png" witdth="25dvw">
+<img src="screenshots/resized-0.png" witdth="25%">
+<img src="screenshots/resized-1.png" witdth="25%">
+<img src="screenshots/resized-2.png" witdth="25%">
+<img src="screenshots/resized-3.png" witdth="25%">
+<img src="screenshots/resized-4.png" witdth="25%">
 
 # Home Journal
 
