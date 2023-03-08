@@ -1,9 +1,9 @@
 <div>
-<img src="screenshots/resized-0.png" width="20%">
-<img src="screenshots/resized-1.png" width="20%">
-<img src="screenshots/resized-2.png" width="20%">
-<img src="screenshots/resized-3.png" width="20%">
-<img src="screenshots/resized-4.png" width="20%">
+<img src="screenshots/resized-0.png" width="22%">
+<img src="screenshots/resized-1.png" width="22%">
+<img src="screenshots/resized-2.png" width="22%">
+<img src="screenshots/resized-3.png" width="22%">
+<img src="screenshots/resized-4.png" width="22%">
 </div>
 
 # Home Journal
