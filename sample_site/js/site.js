@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (sessionStorage.getItem("mode") == "light") {
+  if (localStorage.getItem("mode") == "light") {
     lightMode();
   } else {
     darkMode();
@@ -14,14 +14,14 @@ function lightMode() {
   var element = document.body;
   element.classList.remove("dark");
   element.classList.add("light");
-  sessionStorage.setItem("mode", "light");
+  localStorage.setItem("mode", "light");
 }
 
 function darkMode() {
   var element = document.body;
   element.classList.remove("light");
   element.classList.add("dark");
-  sessionStorage.setItem("mode", "dark");
+  localStorage.setItem("mode", "dark");
 }
 
 function changeMode() {
@@ -31,5 +31,4 @@ function changeMode() {
   } else {
     lightMode();
   }
-  console.log("mode changed");
 }
