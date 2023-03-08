@@ -3,15 +3,16 @@
   <head>
     <title>{{ post.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/css/github-markdown-dark.css" />
+    <link rel="stylesheet" href="/css/github-markdown.css" />
     <link href="/css/beer.min.css" rel="stylesheet" />
     <link href="/css/site.css" rel="stylesheet" />
     <script src="/js/lightense.min.js"></script>
+    <script src="/js/post.js"></script>
     <script src="/js/site.js"></script>
   </head>
 
   <body class="dark">
-    <nav class="bottom no-margin black">
+    <nav class="bottom no-margin">
       <a href="/{{ post.previous }}" id="previous">
         <i>arrow_back</i>
         <div>Previous</div>
@@ -23,6 +24,10 @@
       <a href="/new.html">
         <i>add</i>
         <div>New</div>
+      </a>
+      <a href="" onclick="changeMode()">
+        <i>light_mode</i>
+        <div>Mode</div>
       </a>
       <a href="/{{ post.next }}" id="next">
         <i>arrow_forward</i>

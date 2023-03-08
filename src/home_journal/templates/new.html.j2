@@ -14,10 +14,11 @@
     <script type="module" src="js/beer.min.js"></script>
     <script type="module" src="js/material-dynamic-colors.min.js"></script>
     <script src="/js/new.js"></script>
+    <script src="/js/site.js"></script>
   </head>
 
   <body class="dark">
-    <nav class="bottom no-margin black">
+    <nav class="bottom no-margin">
       <a href="/">
         <i>home</i>
         <div>Home</div>
@@ -25,6 +26,10 @@
       <a href="/new.html">
         <i>add</i>
         <div>New</div>
+      </a>
+      <a href="" onclick="changeMode()">
+        <i>light_mode</i>
+        <div>Mode</div>
       </a>
     </nav>
     <div class="modal modal_status" id="status">

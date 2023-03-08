@@ -1,27 +1,35 @@
-document.onkeydown = checkKey;
-
-function checkKey(e) {
-  e = e || window.event;
-
-  if (e.keyCode == "38") {
-    // up arrow
-  } else if (e.keyCode == "40") {
-    // down arrow
-  } else if (e.keyCode == "37") {
-    // left arrow
-    const elem = document.getElementById("previous");
-    window.location.href = elem.href;
-  } else if (e.keyCode == "39") {
-    // right arrow
-    const elem = document.getElementById("next");
-    window.location.href = elem.href;
+document.addEventListener("DOMContentLoaded", function () {
+  if (sessionStorage.getItem("mode") == "light") {
+    lightMode();
+  } else {
+    darkMode();
   }
+  var element = document.body;
+  if ((element.style.visibility = "hidden")) {
+    element.style.visibility = "visible";
+  }
+});
+
+function lightMode() {
+  var element = document.body;
+  element.classList.remove("dark");
+  element.classList.add("light");
+  sessionStorage.setItem("mode", "light");
 }
 
-window.addEventListener(
-  "load",
-  function () {
-    Lightense("img");
-  },
-  false
-);
+function darkMode() {
+  var element = document.body;
+  element.classList.remove("light");
+  element.classList.add("dark");
+  sessionStorage.setItem("mode", "dark");
+}
+
+function changeMode() {
+  var element = document.body;
+  if (element.classList.contains("light")) {
+    darkMode();
+  } else {
+    lightMode();
+  }
+  console.log("mode changed");
+}

@@ -13,6 +13,7 @@
     <link href="/css/site.css" rel="stylesheet" />
     <script type="module" src="/js/beer.min.js"></script>
     <script type="module" src="/js/material-dynamic-colors.min.js"></script>
+    <script type="text/javascript" src="/js/site.js"></script>
     <link rel="manifest" href="/manifest.webmanifest" />
     <script>
       if ("serviceWorker" in navigator) {
@@ -23,7 +24,7 @@
   </head>
 
   <body class="dark">
-    <nav class="bottom no-margin black">
+    <nav class="bottom no-margin">
       <a href="/">
         <i>home</i>
         <div>Home</div>
@@ -31,6 +32,10 @@
       <a href="/new.html">
         <i>add</i>
         <div>New</div>
+      </a>
+      <a href="" onclick="changeMode()">
+        <i>light_mode</i>
+        <div>Mode</div>
       </a>
     </nav>
     <main class="responsive">
