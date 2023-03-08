@@ -8,6 +8,7 @@ body {
   gap: 0.5vw;
   justify-content: space-evenly;
   padding: 0rem;
+  padding-bottom: .75rem;
   border-radius: 1rem;
   overflow: hidden;
 }
