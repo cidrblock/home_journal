@@ -3,6 +3,7 @@ autoplay
 backref
 beercss
 blockquotes
+brackethighlighter
 bstar
 cmark
 cmarkgfm
@@ -25,10 +26,12 @@ list_tagswerkzeug
 matroska
 notranslate
 octicon
+prettylights
 quicktime
 roboto
 strikethrough
 stylesheet
+sublimelinter
 subproc
 tada
 tunghsiao
