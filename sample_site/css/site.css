@@ -80,7 +80,6 @@ article {
   width: inherit;
 }
 
-
 article.single-post > .markdown-body {
   background-color: var(--surface);
 }
@@ -90,7 +89,7 @@ article.single-post > .markdown-body p {
 }
 
 article.single-post > .markdown-body > * {
-  margin-bottom: .75rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 article.single-post > .markdown-body > p:has(img) {
@@ -130,11 +129,10 @@ article.single-post > .markdown-body > .video > video {
   top: 30%;
 }
 
-
 .deemphasisze {
   display: inline;
   text-transform: uppercase;
   font-size: 0.8em;
   font-weight: bold;
-  color: var(--outline)
+  color: var(--outline);
 }
