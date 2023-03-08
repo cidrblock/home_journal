@@ -226,7 +226,12 @@ def _extract_images(post: NewPost, request: Request) -> None:
     post.fs_media_dir.mkdir(exist_ok=True, parents=True)
 
     all_media = request.files.getlist("media")
+
+    logger.debug(all_media)
+    logger.debug(len(all_media))
+
     for media in all_media:
+        logger.debug(media)
         if not media:
             continue
         if not isinstance(media.filename, str):
@@ -249,7 +254,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
                 place_lim = file_size - len(eop)
                 if place in (-1, place_lim):
                     post.media_file_names.append(filename)
-                    return
+                    continue
                 offset = place - 4
 
                 mem_map.seek(0)
