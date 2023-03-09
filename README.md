@@ -91,6 +91,49 @@ options:
   -t TAGS, --tags TAGS  A list of tags for new posts
 ```
 
+## In a container
+
+Although currently a container is not available, a sample Container file is available in the repository.
+
+The container will need python, ffmpeg, and libmagic.
+
+an example using fedora would be:
+
+```
+FROM registry.fedoraproject.org/fedora-minimal:38
+
+RUN dnf5 install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-38.noarch.rpm && \
+    dnf5 install -y \
+        python3 \
+        python3-pip \
+        ffmpeg && \
+    dnf5 clean all -y
+
+RUN pip install --root-user-action=ignore \
+        home-journal==0.0.7
+```
+
+built with:
+
+```
+podman build  -f Containerfile --tag home-journal
+```
+
+and run with:
+
+```
+podman run --volume /home/user/site:/mnt/site --publish 9000:8000 home-journal \
+    home-journal --log_file /mnt/site/hj.log \
+        --log_level debug \
+        --site_directory /mnt/site \
+        --tags family,friends,food,home,travel \
+        --init
+```
+
+Where `/home/user/site` is the directory where you wish to place the site files and log file.
+
+Please see the individual files in the root of the repo for the most recent examples.
+
 ## Thank you
 
 - Slick modern simple CSS https://www.beercss.com/
