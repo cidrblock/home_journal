@@ -10,12 +10,15 @@
       "request": "launch",
       "module": "home_journal",
       "args": [
-        "-sd",
+        // "--init",
+        "-s",
         "/space8/home_journal/sample_site",
         "-p",
         "9000",
         "--tags",
-        "cars,people,boats,nature"
+        "cars,people,boats,nature",
+        "-l",
+        "debug"
       ],
       "justMyCode": true,
       "cwd": "${workspaceFolder}/src"

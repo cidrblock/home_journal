@@ -9,11 +9,11 @@ build-backend = "setuptools.build_meta"
 name = "home_journal"
 dynamic = ["dependencies"]
 description = "A simple journal for use at home by the family"
-authors = [{ "name" = "Bradley A. Thornton" }]
+authors = [{ 'name' = 'Bradley A. Thornton' }]
 license = { text = "MIT" }
 requires-python = ">=3.11"
 readme = "README.md"
-version = "0.0.4"
+version = "0.0.7"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Framework :: Flask",
@@ -25,11 +25,11 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy"
+  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 [project.scripts]
-home-journal = "home_journal.run:main"
+home-journal = "home_journal.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/cidrblock/home_journal"
@@ -41,7 +41,6 @@ line-length = 100
 
 [tool.isort]
 force_single_line = true # Force from .. import to be 1 per line, minimizing changes at time of implementation
-known_first_party = "ansible_navigator, key_value_store" # No effect at implementation, here anticipating future benefit
 lines_after_imports = 2 # Ensures consistency for cases when there's variable vs function/class definitions after imports
 lines_between_types = 1 # Separate import/from with 1 line, minimizing changes at time of implementation
 no_lines_before = "LOCALFOLDER" # Keeps local imports bundled with first-party
@@ -52,10 +51,10 @@ python_version = 3.11
 strict = true
 color_output = true
 error_summary = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_any_generics = true
 
+# disallow_untyped_calls = true
+# disallow_untyped_defs = true
+# disallow_any_generics = true
 # disallow_any_unimported = True
 # warn_redundant_casts = True
 # warn_return_any = True
@@ -79,12 +78,7 @@ good-names = "i,j,k,ex,Run,_,f,fh"
 jobs = 0
 
 [tool.pylint.messages_control]
-disable = [
-  "duplicate-code",
-  "fixme",
-  "too-few-public-methods",
-  "unsubscriptable-object",
-]
+disable = []
 enable = [
   "useless-suppression", # Identify unneeded pylint disable statements
 

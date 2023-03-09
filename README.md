@@ -15,6 +15,7 @@ A self-hosted mini journaling site for families for capturing
 - photos
 - ideas
 - jokes
+- videos
 - and anything else you want to remember
 
 I had an old wordpress blog that I converted to markdown files and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:
@@ -35,18 +36,20 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 
 ## What's working
 
+- Github style markdown formatting
 - Index page
-- Post page
+- Light/dark modes
 - New post page
-- Tags page
+- Post page
 - Progressive web app (PWA) support (requires https)
 - PWA as share target
-- Responsive design
 - Rebuild static html files (http://your.server/all)
-- Static files for all but new entry submission
-- Github style markdown formatting
-- Video uploads
+- Responsive design
+- Site initialization
 - Splitting Google motion photos into stills and video
+- Static files for all but new entry submission
+- Tags page
+- Video uploads
 
 ## Future enhancements
 
@@ -54,12 +57,39 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 
 ## Installation
 
-- Clone the repo
-- Copy the sample_site directory to your desired location, it will be the directory for all content
-- Build and source a virtual environment
-- Install from the source directory `pip install .`
-- Run the server `home-journal -sd /your/site/root --tags cars,people,boats,nature
-- Enjoy (http://your.server:8000)
+```
+pip install home-journal --user
+```
+
+## Usage
+
+Decide on the directory where you wish to place the site files. (e.g. `/home/user/home_journal`)
+
+```
+home-journal --init --site-directory /home/user/home_journal
+```
+
+Each time home-journal is run with the `--init` flag it will copy the css, js, and icons from the source tree into the site. If these files have been customized in the site directory, those changes will be overwritten if the `--init` flag is used again.
+
+Until stable releases are available, the css and js files may change so running with the `--init` flag will be necessary. Improvements to the css and js files are welcomed as pull requests to the repository.
+
+## Help
+
+```
+usage: home-journal [-h] [-i] [-l {debug,info,warning,error,critical}] [-f LOG_FILE] [-p PORT] -s SITE_DIRECTORY [-t TAGS]
+
+options:
+  -h, --help            show this help message and exit
+  -i, --init            Initialize the site with css, js, and icons
+  -l {debug,info,warning,error,critical}, --log_level {debug,info,warning,error,critical}
+                        Log level
+  -f LOG_FILE, --log_file LOG_FILE
+                        Log file
+  -p PORT, --port PORT  Port to run the server on
+  -s SITE_DIRECTORY, --site_directory SITE_DIRECTORY
+                        Path to the site directory
+  -t TAGS, --tags TAGS  A list of tags for new posts
+```
 
 ## Thank you
 

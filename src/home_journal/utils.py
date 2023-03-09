@@ -28,7 +28,7 @@ jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
 )
 
-logger = logging.getLogger("home_journal.utils")
+logger = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True)
@@ -574,6 +574,7 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
     Raises:
         ValueError: If the thumbnail URL is not set.
     """
+    count = 0
     for post in posts:
         image_dir = post.fs_media_dir
         index_image = post.index_image
@@ -590,3 +591,5 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
             image = ImageOps.exif_transpose(image)
             image.thumbnail((1000, 1000), Image.ANTIALIAS)
             image.save(image_dir / thumbnail_name)
+            count += 1
+    logger.debug("Built %s thumbnails", count)

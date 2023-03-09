@@ -22,7 +22,7 @@ from .utils import write_tag_indices
 
 
 app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
-logger = logging.getLogger("home_journal.main")
+logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
@@ -56,6 +56,7 @@ def endpoint_convert_all() -> str:
     Returns:
         The count of posts converted.
     """
+    logger.debug("Converting all posts")
     revised, all_posts = convert_all_html(app.config["site_dir"])
     build_thumbnails(all_posts)
     write_index(all_posts, site_dir=app.config["site_dir"])
@@ -87,46 +88,19 @@ def endpoint_post() -> "BaseResponse":
     return redirect(post.fs_post_full_html_path.relative_to(site_dir).as_posix())
 
 
-def list_tags(values: str) -> list[str]:
-    """Split a comma separated list of tags.
+def run_server(args: argparse.Namespace) -> None:
+    """Run the app.
 
     Args:
-        values: A comma separated list of tags.
-
-    Returns:
-        A list of tags.
+        args: The parsed command line arguments.
     """
-    return values.split(",")
-
-
-def main() -> None:
-    """Run the app."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-sd",
-        "--site_directory",
-        type=str,
-        help="Path to the site directory",
-        required=True,
-    )
-    parser.add_argument(
-        "-p",
-        "--port",
-        type=int,
-        help="Port to run the server on",
-        default=8000,
-    )
-    parser.add_argument("-t", "--tags", help="A list of tags for new posts", type=list_tags)
-
-    args = parser.parse_args()
-    logger.debug(args)
     app.config["site_dir"] = pathlib.Path(args.site_directory)
     app.config["tags"] = args.tags
     app.static_folder = args.site_directory
-
     logger.info("Starting server")
+    if args.init:
+        logger.info("Initializing site")
+        res = endpoint_convert_all()
+        logger.info(res)
+
     serve(app, host="0.0.0.0", port=args.port, threads=8)
-
-
-if __name__ == "__main__":
-    main()
