@@ -7,11 +7,13 @@ brackethighlighter
 bstar
 cmark
 cmarkgfm
+containerfile
 corl
 deemphasisze
 enctype
 endfor
 exif
+fedoraproject
 frontmatter
 fxxxxxxx
 gruber
@@ -19,6 +21,7 @@ journaling
 jstar
 kanye
 levelname
+libmagic
 libx
 liga
 lightense
