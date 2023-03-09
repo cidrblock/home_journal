@@ -9,4 +9,3 @@ RUN dnf5 install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-r
 
 RUN pip install --root-user-action=ignore \
         home-journal==0.0.7
-
