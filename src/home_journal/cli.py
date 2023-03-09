@@ -7,7 +7,6 @@ import shutil
 
 from importlib import resources
 
-from .run import endpoint_convert_all
 from .run import run_server
 
 
