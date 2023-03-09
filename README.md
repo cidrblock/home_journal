@@ -15,6 +15,7 @@ A self-hosted mini journaling site for families for capturing
 - photos
 - ideas
 - jokes
+- videos
 - and anything else you want to remember
 
 I had an old wordpress blog that I converted to markdown files and needed a way to view the posts. I was looking for something self-hosted and simple. Some of my design requirements were:

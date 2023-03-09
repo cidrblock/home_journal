@@ -1,2 +1,2 @@
 include src/home_journal/templates/*.j2
-include src/site/*
+graft src/home_journal/site/*
