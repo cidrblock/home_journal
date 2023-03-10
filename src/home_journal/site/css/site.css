@@ -218,6 +218,12 @@ article.single-post > .markdown-body > .video > video {
 .modal_status {
   top: 30%;
 }
+.modal_search {
+  top: 30%;
+}
+.modal_search > form > .field {
+  margin-bottom: 0rem;
+}
 
 .deemphasisze {
   display: inline;

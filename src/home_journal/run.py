@@ -16,6 +16,7 @@ from waitress import serve
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import initialize_new_post
+from .utils import render_search_results
 from .utils import write_author_indices
 from .utils import write_index
 from .utils import write_tag_indices
@@ -47,6 +48,20 @@ def endpoint_new() -> Response:
         The new.html file with the tags.
     """
     return Response(render_template("new.html.j2", tags=app.config["tags"]))
+
+
+@app.route("/search", methods=["POST"])
+def endpoint_search() -> Response:
+    """Search all the posts.
+
+    Returns:
+        An index page with the search results.
+    """
+    search = request.form["search"]
+    result = render_search_results(search, app.config["site_dir"])
+    return Response(
+        render_template("index.html.j2", posts=result, title=search, title_icon="search")
+    )
 
 
 @app.route("/all")

@@ -36,6 +36,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 
 ## What's working
 
+- Full text search
 - Github style markdown formatting
 - Index page
 - Light/dark modes
@@ -110,7 +111,7 @@ RUN dnf5 install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-r
     dnf5 clean all -y
 
 RUN pip install --root-user-action=ignore \
-        home-journal==0.0.7
+        home-journal==0.0.8
 ```
 
 built with:
