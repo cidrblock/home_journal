@@ -36,6 +36,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 
 ## What's working
 
+- Full text search
 - Github style markdown formatting
 - Index page
 - Light/dark modes
