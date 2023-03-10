@@ -27,6 +27,7 @@ liga
 lightense
 list_tagswerkzeug
 matroska
+nbsp
 notranslate
 octicon
 prettylights
