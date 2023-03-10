@@ -10,7 +10,7 @@
       "request": "launch",
       "module": "home_journal",
       "args": [
-        // "--init",
+        "--init",
         "-s",
         "/space8/home_journal/sample_site",
         "-p",

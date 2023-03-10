@@ -300,13 +300,14 @@ def _extract_images(post: NewPost, request: Request) -> None:
 
 
 def _populate_post_metadata(
-    md_glob: Generator[Path, None, None], site_dir: Path
+    md_glob: Generator[Path, None, None], site_dir: Path, limit: list[Path] | None = None
 ) -> list[ExistingPost]:
     """Populate the metadata for all posts.
 
     Args:
         md_glob: The glob of markdown files.
         site_dir: The directory of the site.
+        limit: The list of posts to limit to.
 
     Returns:
         The list of posts.
@@ -314,6 +315,8 @@ def _populate_post_metadata(
     posts = []
 
     for path in md_glob:
+        if limit and path not in limit:
+            continue
         parsed_post = frontmatter_load(path)
         date = datetime.fromisoformat(parsed_post["date"])
         if not date.tzinfo:
@@ -534,7 +537,7 @@ def write_tag_indices(posts: list[ExistingPost], site_dir: Path) -> None:
         tag_index_path.mkdir(parents=True, exist_ok=True)
         path = tag_index_path / f"{_slugify(tag)}.html"
         template = jinja_env.get_template("index.html.j2")
-        rendered = template.render(posts=matching_posts, title=tag)
+        rendered = template.render(posts=matching_posts, title=tag, title_icon="tag")
         path.write_text(rendered, encoding="utf-8")
 
 
@@ -561,7 +564,7 @@ def write_author_indices(posts: list[ExistingPost], site_dir: Path) -> None:
         author_index_path.mkdir(parents=True, exist_ok=True)
         path = author_index_path / f"{_slugify(author)}.html"
         template = jinja_env.get_template("index.html.j2")
-        rendered = template.render(posts=matching_posts, title=author)
+        rendered = template.render(posts=matching_posts, title=author, title_icon="person")
         path.write_text(rendered, encoding="utf-8")
 
 
@@ -593,3 +596,29 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
             image.save(image_dir / thumbnail_name)
             count += 1
     logger.debug("Built %s thumbnails", count)
+
+
+def render_search_results(search_str: str, site_dir: Path) -> list[ExistingPost]:
+    """Render the search results.
+
+    Args:
+        search_str: The search string.
+        site_dir: The directory of the site.
+
+    Returns:
+        The rendered search results.
+    """
+    res = subprocess.run(
+        f"grep -r -i -l --include='*.md' '{search_str}' {site_dir}",
+        shell=True,
+        capture_output=True,
+        check=False,
+    )
+    limit = [Path(line) for line in res.stdout.decode("utf-8").splitlines()]
+    if not limit:
+        return []
+    posts_dir = site_dir / "posts"
+    md_glob = posts_dir.rglob("*.md")
+    posts = _populate_post_metadata(md_glob=md_glob, site_dir=site_dir, limit=limit)
+    build_thumbnails(posts)
+    return posts

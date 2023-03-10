@@ -25,7 +25,7 @@
 
   <body class="dark">
     <nav class="bottom no-margin">
-      <a href="" onclick="changeMode()">
+      <a onclick="changeMode()">
         <i>light_mode</i>
         <div>Mode</div>
       </a>
@@ -33,14 +33,31 @@
         <i>home</i>
         <div>Home</div>
       </a>
+      <a onclick="search_modal()">
+        <i>search</i>
+        <div>Search</div>
+      </a>
       <a href="/new.html">
         <i>add</i>
         <div>New</div>
       </a>
     </nav>
-    <main class="responsive">
+    <div class="modal modal_search" id="search">
+      <form action="/search" method="post" autocomplete="off" id="form">
+        <div class="field label prefix border round">
+          <i>search</i>
+          <input type="text" name="search" id="search_input" required />
+          <label>Search</label>
+        </div>
+      </form>
+    </div>
+    <main class="responsive" id="main_body">
       <div class="s12 page-title">
-        <h2>{{ title }}</h2>
+        <h2>
+          {% if title_icon %}<i class="extra"
+            >{{ title_icon }}</i
+          >{% endif %}&nbsp;{{ title }}
+        </h2>
       </div>
       <div class="main">
         {% for post in posts|reverse %}

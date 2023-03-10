@@ -32,3 +32,22 @@ function changeMode() {
     lightMode();
   }
 }
+
+function search_modal() {
+  var search = document.getElementById("search");
+  var main_body = document.getElementById("main_body");
+  if (search.style.visibility == "visible") {
+    search.style.visibility = "hidden";
+    search.style.opacity = "0%";
+    main_body.style.opacity = "100%";
+  } else {
+    search.style.visibility = "visible";
+    search.style.opacity = "100%";
+    main_body.style.opacity = "20%";
+    setTimeout(() => {
+      search_input.focus();
+      search_input.select();
+      console.log("Delayed for 1 second.");
+    }, 200);
+  }
+}
