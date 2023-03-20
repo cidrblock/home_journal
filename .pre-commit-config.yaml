@@ -33,7 +33,7 @@ repos:
         language_version: python3
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.28.0
+    rev: v6.30.1
     hooks:
       - id: cspell
         name: Spell check with cspell
@@ -70,7 +70,7 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.2
+    rev: v2.2.4
     hooks:
       - id: codespell
 
@@ -94,7 +94,7 @@ repos:
           - darglint
           - flake8-docstrings
   - repo: https://github.com/pre-commit/mirrors-mypy.git
-    rev: v1.0.1
+    rev: v1.1.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -104,7 +104,7 @@ repos:
           - types-Flask
 
   - repo: https://github.com/pycqa/pylint.git
-    rev: v2.16.4
+    rev: v2.17.0
     hooks:
       - id: pylint
         args:
