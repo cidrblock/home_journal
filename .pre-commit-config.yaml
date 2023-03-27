@@ -75,7 +75,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.29.0
+    rev: v1.30.0
     hooks:
       - id: yamllint
         args:
@@ -104,7 +104,7 @@ repos:
           - types-Flask
 
   - repo: https://github.com/pycqa/pylint.git
-    rev: v2.17.0
+    rev: v2.17.1
     hooks:
       - id: pylint
         args:
