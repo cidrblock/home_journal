@@ -1745,7 +1745,9 @@ button {
   background-color: var(--primary);
   margin: 0 0.5rem;
   border-radius: 0.5rem;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   user-select: none;
   gap: 1rem;
@@ -1849,7 +1851,9 @@ article {
   padding: 1rem;
   border-radius: 0.75rem;
   display: block;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
 }
 * + article {
@@ -1879,7 +1883,9 @@ article.large {
   margin: 0 0.5rem;
   text-transform: none;
   border-radius: 0.5rem;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   user-select: none;
   gap: 1rem;
@@ -2004,7 +2010,9 @@ nav.right:not(.s, .m, .l) ~ .responsive {
   text-align: left;
   border-radius: 0.25rem;
   transform: scale(0.8) translateY(120%);
-  transition: var(--speed2) all, 0s background-color;
+  transition:
+    var(--speed2) all,
+    0s background-color;
 }
 .dropdown.no-wrap {
   width: auto;
@@ -2356,7 +2364,9 @@ input[type="file"] {
   left: 1rem;
   font-size: 1rem;
   transform: translateY(-50%);
-  transition: var(--speed2) all, 0s background-color;
+  transition:
+    var(--speed2) all,
+    0s background-color;
   z-index: 0;
 }
 .field.label.textarea.small > label {
@@ -2969,7 +2979,9 @@ video.circle,
 video.responsive {
   object-fit: cover;
   object-position: center;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   height: 3rem;
   width: 3rem;
@@ -3136,7 +3148,9 @@ button > span + img.responsive {
   max-height: 80%;
   overflow-x: hidden;
   overflow-y: auto;
-  transition: var(--speed3) all, 0s background-color;
+  transition:
+    var(--speed3) all,
+    0s background-color;
   transform: translate(-50%, -4rem);
 }
 .modal:not(.left, .right, .top, .bottom) {
@@ -3504,7 +3518,9 @@ nav:not(.left, .right) > .large-space {
   color: var(--on-background);
   background-color: var(--overlay);
   z-index: 100;
-  transition: var(--speed3) all, 0s background-color;
+  transition:
+    var(--speed3) all,
+    0s background-color;
 }
 nav > .overlay {
   z-index: 0;
