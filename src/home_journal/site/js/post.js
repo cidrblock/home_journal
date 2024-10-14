@@ -23,5 +23,5 @@ window.addEventListener(
   function () {
     Lightense("img");
   },
-  false
+  false,
 );
