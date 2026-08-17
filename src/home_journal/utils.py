@@ -1,4 +1,5 @@
 """Helper utilities."""
+
 import logging
 import re
 import shutil
@@ -22,7 +23,6 @@ from flask.wrappers import Request
 from frontmatter import load as frontmatter_load
 from PIL import Image
 from PIL import ImageOps
-
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
@@ -246,7 +246,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
         mimetype = magic.from_file(media_path, mime=True)
         logger.debug(mimetype)
         if mimetype.startswith("image/"):
-            eop = b"\x66\x74\x79\x70\x69\x73\x6F\x6D"
+            eop = b"\x66\x74\x79\x70\x69\x73\x6f\x6d"
             with media_path.open("r+b") as image:
                 mem_map = mmap(image.fileno(), 0)
                 file_size = mem_map.size()
