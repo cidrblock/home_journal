@@ -312,12 +312,115 @@ def _media_groups(post: NewPost, names: list[str]) -> dict[str, list[tuple[Path,
     mimes: dict[str, list[tuple[Path, str]]] = {}
     for media in names:
         path = post.fs_media_dir / media
+        if not path.is_file():
+            logger.warning("Skipping missing media file %s", path)
+            continue
         mime = magic.from_file(path, mime=True)
         mime_type, _mime_subtype = mime.split("/")
         if mime_type not in mimes:
             mimes[mime_type] = []
         mimes[mime_type].append((post.relative_media_path / media, mime))
     return mimes
+
+
+_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+_TRAILING_IMAGE = re.compile(
+    r"[ \t]*!\[\]\(media/([^)\s]+)\)[ \t]*(?:\r?\n)?\Z",
+)
+_TRAILING_VIDEO = re.compile(
+    r"[ \t]*<div class=\"video\">\s*"
+    r"<video[^>]*>\s*"
+    r"<source src=\"media/([^\"]+)\"[^>]*>\s*"
+    r"</video>\s*"
+    r"</div>[ \t]*(?:\r?\n)?\Z",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def catalog_media_names(metadata: dict[str, object]) -> list[str]:
+    """Return media file names from post frontmatter.
+
+    Args:
+        metadata: Parsed post frontmatter.
+
+    Returns:
+        Names from media_file_names, or image_file_names for older posts.
+    """
+    names = metadata.get("media_file_names") or metadata.get("image_file_names") or []
+    return [str(name) for name in names]
+
+
+def strip_media_appendix(content: str, media_names: list[str]) -> str:
+    """Remove a trailing generated media appendix from markdown content.
+
+    Only strips trailing image/video blocks whose files are in media_names.
+    Inline images in the prose are left alone.
+
+    Args:
+        content: Full markdown body.
+        media_names: Catalog of attached media file names.
+
+    Returns:
+        Prose with the generated appendix removed.
+    """
+    known = set(media_names)
+    text = content.replace("\r\n", "\n")
+    while text:
+        trimmed = text.rstrip()
+        image_match = _TRAILING_IMAGE.search(trimmed)
+        if image_match and image_match.group(1) in known:
+            text = trimmed[: image_match.start()]
+            continue
+        video_match = _TRAILING_VIDEO.search(trimmed)
+        if video_match and video_match.group(1) in known:
+            text = trimmed[: video_match.start()]
+            continue
+        break
+    return text.rstrip()
+
+
+def edit_prose(post: ExistingPost) -> str:
+    """Return the post body without a generated media appendix.
+
+    Args:
+        post: The post to edit.
+
+    Returns:
+        Prose suitable for the edit form.
+    """
+    md_path = post.fs_post_directory / "post.md"
+    parsed_post = frontmatter_load(md_path)
+    return strip_media_appendix(post.md_content, catalog_media_names(parsed_post.metadata))
+
+
+def media_names_in_content(content: str) -> set[str]:
+    """Return media file names referenced in markdown or video HTML.
+
+    Args:
+        content: Markdown body.
+
+    Returns:
+        File names that appear as media/... references.
+    """
+    return set(re.findall(r"media/([^)\s\"]+)", content))
+
+
+def _index_image_name(metadata: dict[str, object], content: str) -> str | None:
+    """Pick the index thumbnail file name for a post.
+
+    Args:
+        metadata: Parsed post frontmatter.
+        content: Markdown body.
+
+    Returns:
+        A still-image file name, or None.
+    """
+    for name in catalog_media_names(metadata):
+        if Path(name).suffix.lower() in _IMAGE_SUFFIXES:
+            return Path(name).name
+    images = re.findall(r"!\[.*\]\((.*?\.(?:jpg|jpeg|png))?.*\)", content)
+    names = [Path(image).name for image in images if image]
+    return names[0] if names else None
 
 
 def _populate_post_metadata(
@@ -342,11 +445,7 @@ def _populate_post_metadata(
         date = datetime.fromisoformat(parsed_post["date"])
         if not date.tzinfo:
             date = date.replace(tzinfo=timezone.utc)
-        image_file_names = parsed_post.metadata.get("image_file_names", [])
-        # Some older posts may not have the header information
-        if not image_file_names:
-            images = re.findall(r"!\[.*\]\((.*?\.(?:jpg|jpeg|png))?.*\)", parsed_post.content)
-            image_file_names = [Path(image).name for image in images if image]
+        image_file_names = _index_image_name(parsed_post.metadata, parsed_post.content)
 
         # Some older posts have categories, convert to tags
         tags = parsed_post.metadata.get("tags", [])
@@ -363,7 +462,7 @@ def _populate_post_metadata(
         )
         post.post_url = Path("/") / post.fs_post_full_html_path.relative_to(site_dir)
         if image_file_names:
-            post.index_image = image_file_names[0]
+            post.index_image = image_file_names
             post.thumbnail_parent_url = Path("/") / post.fs_media_dir.relative_to(site_dir)
         posts.append(post)
     # Ensure we are ordered chronologically
@@ -509,8 +608,10 @@ def delete_post(site_dir: Path, post_id: str) -> bool:
 
 
 def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
-    """Update a post's markdown and append any newly uploaded media.
+    """Update a post's markdown and re-append attached media.
 
+    The edit form holds prose only. This writes that prose, then appends
+    generated image and video blocks from the media catalog plus new uploads.
     The post directory, post id, date, and existing media files are kept.
 
     Args:
@@ -526,9 +627,7 @@ def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
 
     md_path = existing.fs_post_directory / "post.md"
     parsed_post = frontmatter_load(md_path)
-    existing_media = list(parsed_post.metadata.get("media_file_names") or [])
-    if not existing_media:
-        existing_media = list(parsed_post.metadata.get("image_file_names") or [])
+    existing_media = catalog_media_names(parsed_post.metadata)
 
     draft = NewPost(
         author=request.form["author"],
@@ -540,16 +639,20 @@ def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
         tags=_extract_tags(request),
         title=request.form.get("title", existing.title),
     )
-    known_media = set(draft.media_file_names)
     _extract_images(post=draft, request=request)
-    new_names = [name for name in draft.media_file_names if name not in known_media]
-    new_media = _media_groups(draft, new_names)
+    prose = strip_media_appendix(
+        request.form.get("content", ""),
+        draft.media_file_names,
+    )
+    already_in_prose = media_names_in_content(prose)
+    appendix_names = [name for name in draft.media_file_names if name not in already_in_prose]
+    appendix = _media_groups(draft, appendix_names)
 
     template = jinja_env.get_template("post.md.j2")
     draft.md_content = template.render(
-        content=request.form.get("content", ""),
-        images=new_media.get("image", []),
-        videos=new_media.get("video", []),
+        content=prose,
+        images=appendix.get("image", []),
+        videos=appendix.get("video", []),
         md_header=draft.md_header,
     )
     draft.write_md()

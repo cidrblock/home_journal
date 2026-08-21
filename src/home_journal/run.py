@@ -17,6 +17,7 @@ from waitress import serve
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import delete_post
+from .utils import edit_prose
 from .utils import find_post
 from .utils import initialize_new_post
 from .utils import load_site_config
@@ -165,6 +166,7 @@ def endpoint_edit() -> "BaseResponse | Response":
         post = find_post(site_dir, request.args.get("post_id", ""))
         if post is None:
             return Response("Post not found", status=404)
+        edit_content = edit_prose(post)
         configured_tags = {str(tag) for tag in app.config["tags"]}
         custom_tags = [tag for tag in post.tags if tag not in configured_tags]
         return Response(
@@ -174,6 +176,7 @@ def endpoint_edit() -> "BaseResponse | Response":
                 tags=app.config["tags"],
                 authors=app.config["authors"],
                 custom_tags=", ".join(custom_tags),
+                edit_content=edit_content,
             )
         )
 
