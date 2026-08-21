@@ -71,9 +71,7 @@
                 />
               {% endif %}
               <div class="article-meta">
-                <h6>
-                  <a class="post-cover" href="{{ post.post_url }}">{{ post.title }}</a>
-                </h6>
+                <h6>{{ post.title }}</h6>
                 <p>
                   {{ post.date.strftime('%B %d, %Y') }}
                   {% if post.author %}
@@ -95,6 +93,7 @@
                   </p>
                 {% endif %}
               </div>
+              <a class="post-cover" href="{{ post.post_url }}" aria-label="{{ post.title }}"></a>
             </article>
           </div>
         {% endfor %}

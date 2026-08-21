@@ -169,16 +169,17 @@ article {
 
 .main > .post > article > img {
   pointer-events: none;
+  z-index: 0;
 }
 
-.main > .post > article .post-cover::after {
-  content: "";
+.main > .post > article > .post-cover {
   position: absolute;
   inset: 0;
   z-index: 1;
+  display: block;
 }
 
-.main > .post > article .article-meta a:not(.post-cover) {
+.main > .post > article .article-meta a {
   position: relative;
   z-index: 2;
 }
