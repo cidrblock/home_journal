@@ -10,7 +10,7 @@ from datetime import datetime
 from datetime import timezone
 from mmap import mmap
 from pathlib import Path
-from typing import Generator
+from collections.abc import Iterator
 
 import cmarkgfm
 import jinja2
@@ -300,7 +300,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
 
 
 def _populate_post_metadata(
-    md_glob: Generator[Path, None, None], site_dir: Path, limit: list[Path] | None = None
+    md_glob: Iterator[Path], site_dir: Path, limit: list[Path] | None = None
 ) -> list[ExistingPost]:
     """Populate the metadata for all posts.
 
@@ -454,8 +454,8 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     Returns:
         The new post.
     """
-    now = datetime.now()
-    now_iso = datetime.now(timezone.utc).astimezone().isoformat()
+    now = datetime.now().astimezone()
+    now_iso = now.isoformat()
     post_id = f"{now_iso}_{_slugify(request.form['title'])}"
 
     # Make the directory for the post and images
@@ -590,10 +590,17 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
         post.thumbnail_url = post.thumbnail_parent_url / thumbnail_name
         if not (image_dir / thumbnail_name).exists():
             image = Image.open(image_path)
-            # Rotate the in memory image correctly
-            image = ImageOps.exif_transpose(image)
-            image.thumbnail((1000, 1000), Image.ANTIALIAS)
-            image.save(image_dir / thumbnail_name)
+            transposed = ImageOps.exif_transpose(image)
+            if transposed is not None:
+                image = transposed
+            image.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
+            save_image = image
+            if thumbnail_name.lower().endswith((".jpg", ".jpeg")) and image.mode not in (
+                "RGB",
+                "L",
+            ):
+                save_image = image.convert("RGB")
+            save_image.save(image_dir / thumbnail_name)
             count += 1
     logger.debug("Built %s thumbnails", count)
 

@@ -94,30 +94,10 @@ options:
 
 ## In a container
 
-Although currently a container is not available, a sample Container file is available in the repository.
-
-The container will need python, ffmpeg, and libmagic.
-
-an example using fedora would be:
+The repository `Containerfile` builds from the local source (Fedora 42, Python 3.13, ffmpeg, libmagic).
 
 ```
-FROM registry.fedoraproject.org/fedora-minimal:38
-
-RUN dnf5 install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-38.noarch.rpm && \
-    dnf5 install -y \
-        python3 \
-        python3-pip \
-        ffmpeg && \
-    dnf5 clean all -y
-
-RUN pip install --root-user-action=ignore \
-        home-journal==0.0.8
-```
-
-built with:
-
-```
-podman build  -f Containerfile --tag home-journal
+podman build -f Containerfile --tag home-journal
 ```
 
 and run with:

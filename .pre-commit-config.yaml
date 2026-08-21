@@ -1,7 +1,7 @@
 ---
 default_language_version:
   # ensures that we get same behavior on CI(s) as on local machines
-  python: python3.11
+  python: python3
 repos:
   - repo: https://github.com/asottile/add-trailing-comma.git
     rev: v2.4.0

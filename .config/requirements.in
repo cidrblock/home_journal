@@ -1,6 +1,8 @@
 cmarkgfm
 flask
-pillow
+jinja2
+pillow>=10
 python-frontmatter
 python-magic
 waitress
+
