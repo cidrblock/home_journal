@@ -29,7 +29,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - No database
 - No javascript frameworks
 - Minimal dependencies
-- No need to edit posts from the UI
+- No need to edit posts from the UI except passcode-protected edit
 - Passcode-protected post delete from the UI
 - Ability to regenerate all html files
 - Ability to add new posts with a text editor
@@ -52,6 +52,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - Tags page
 - Video uploads
 - Passcode-protected post delete
+- Passcode-protected post edit
 - Author dropdown from site config
 
 ## Site config

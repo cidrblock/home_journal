@@ -18,9 +18,11 @@ function store() {
 
 window.onload = function (e) {
   var author = document.getElementById("author");
-  var saved = localStorage.getItem("author");
-  if (saved) {
-    author.value = saved;
+  if (window.location.pathname !== "/edit") {
+    var saved = localStorage.getItem("author");
+    if (saved) {
+      author.value = saved;
+    }
   }
 
   document.getElementById("form").addEventListener("submit", function (e) {

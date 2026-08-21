@@ -17,9 +17,11 @@ from waitress import serve
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import delete_post
+from .utils import find_post
 from .utils import initialize_new_post
 from .utils import load_site_config
 from .utils import render_search_results
+from .utils import update_post
 from .utils import write_author_indices
 from .utils import write_index
 from .utils import write_tag_indices
@@ -149,6 +151,54 @@ def endpoint_delete() -> "BaseResponse | Response":
     logger.info("Deleted post %s", post_id)
     _rebuild_site()
     return redirect("/")
+
+
+@app.route("/edit", methods=["GET", "POST"])
+def endpoint_edit() -> "BaseResponse | Response":
+    """Show or save the edit form for a single post.
+
+    Returns:
+        The edit form, a redirect to the post, or an error response.
+    """
+    site_dir = app.config["site_dir"]
+    if request.method == "GET":
+        post = find_post(site_dir, request.args.get("post_id", ""))
+        if post is None:
+            return Response("Post not found", status=404)
+        configured_tags = {str(tag) for tag in app.config["tags"]}
+        custom_tags = [tag for tag in post.tags if tag not in configured_tags]
+        return Response(
+            render_template(
+                "edit.html.j2",
+                post=post,
+                tags=app.config["tags"],
+                authors=app.config["authors"],
+                custom_tags=", ".join(custom_tags),
+            )
+        )
+
+    if not _passcode_matches(request.form.get("passcode", "")):
+        logger.warning("Rejected post edit with invalid passcode")
+        return Response("Invalid passcode", status=403)
+
+    allowed_authors = app.config.get("authors") or []
+    author = request.form.get("author", "")
+    if allowed_authors and author not in allowed_authors:
+        logger.warning("Rejected post edit with invalid author: %s", author)
+        return Response("Invalid author", status=400)
+
+    post = update_post(site_dir, request)
+    if post is None:
+        logger.warning("Post not found for edit")
+        return Response("Post not found", status=404)
+
+    logger.info("Updated post %s", post.post_id)
+    _revised, all_posts = convert_all_html(site_dir, post_id=post.post_id)
+    build_thumbnails(all_posts)
+    write_index(all_posts, site_dir=site_dir)
+    write_author_indices(all_posts, site_dir=site_dir)
+    write_tag_indices(all_posts, site_dir=site_dir)
+    return redirect(post.fs_post_full_html_path.relative_to(site_dir).as_posix())
 
 
 @app.route("/", methods=["POST"])

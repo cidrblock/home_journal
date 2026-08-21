@@ -299,6 +299,27 @@ def _extract_images(post: NewPost, request: Request) -> None:
             post.media_file_names.append(filename)
 
 
+def _media_groups(post: NewPost, names: list[str]) -> dict[str, list[tuple[Path, str]]]:
+    """Group media files by major MIME type.
+
+    Args:
+        post: The post that owns the media directory.
+        names: Media file names to include.
+
+    Returns:
+        A mapping of major MIME type to relative path and full MIME type.
+    """
+    mimes: dict[str, list[tuple[Path, str]]] = {}
+    for media in names:
+        path = post.fs_media_dir / media
+        mime = magic.from_file(path, mime=True)
+        mime_type, _mime_subtype = mime.split("/")
+        if mime_type not in mimes:
+            mimes[mime_type] = []
+        mimes[mime_type].append((post.relative_media_path / media, mime))
+    return mimes
+
+
 def _populate_post_metadata(
     md_glob: Iterator[Path], site_dir: Path, limit: list[Path] | None = None
 ) -> list[ExistingPost]:
@@ -415,6 +436,31 @@ def _render_markdown(content: str) -> str:
     return content
 
 
+def find_post(site_dir: Path, post_id: str) -> ExistingPost | None:
+    """Find a post by id under the site posts directory.
+
+    Args:
+        site_dir: The directory of the site.
+        post_id: The id of the post.
+
+    Returns:
+        The post, or None if it is missing or outside the posts directory.
+    """
+    if not post_id:
+        return None
+    posts_dir = site_dir / "posts"
+    posts_root = posts_dir.resolve()
+    all_posts = _populate_post_metadata(md_glob=posts_dir.rglob("*.md"), site_dir=site_dir)
+    matches = [post for post in all_posts if post.post_id == post_id]
+    if not matches:
+        return None
+    post_dir = matches[0].fs_post_directory.resolve()
+    if not post_dir.is_relative_to(posts_root):
+        logger.error("Refusing to use path outside posts dir: %s", post_dir)
+        return None
+    return matches[0]
+
+
 def load_site_config(site_dir: Path) -> dict[str, object]:
     """Load optional site config.yml.
 
@@ -446,18 +492,12 @@ def delete_post(site_dir: Path, post_id: str) -> bool:
     Returns:
         True if the post was found and removed.
     """
-    posts_dir = site_dir / "posts"
-    posts_root = posts_dir.resolve()
-    all_posts = _populate_post_metadata(md_glob=posts_dir.rglob("*.md"), site_dir=site_dir)
-    matches = [post for post in all_posts if post.post_id == post_id]
-    if not matches:
+    existing = find_post(site_dir, post_id)
+    if existing is None:
         return False
 
-    post_dir = matches[0].fs_post_directory.resolve()
-    if not post_dir.is_relative_to(posts_root):
-        logger.error("Refusing to delete path outside posts dir: %s", post_dir)
-        return False
-
+    posts_root = (site_dir / "posts").resolve()
+    post_dir = existing.fs_post_directory.resolve()
     shutil.rmtree(post_dir)
     parent = post_dir.parent
     for _ in range(2):
@@ -466,6 +506,54 @@ def delete_post(site_dir: Path, post_id: str) -> bool:
         parent.rmdir()
         parent = parent.parent
     return True
+
+
+def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
+    """Update a post's markdown and append any newly uploaded media.
+
+    The post directory, post id, date, and existing media files are kept.
+
+    Args:
+        site_dir: The directory of the site.
+        request: The edit form request.
+
+    Returns:
+        The existing post, or None if it was not found.
+    """
+    existing = find_post(site_dir, request.form.get("post_id", ""))
+    if existing is None:
+        return None
+
+    md_path = existing.fs_post_directory / "post.md"
+    parsed_post = frontmatter_load(md_path)
+    existing_media = list(parsed_post.metadata.get("media_file_names") or [])
+    if not existing_media:
+        existing_media = list(parsed_post.metadata.get("image_file_names") or [])
+
+    draft = NewPost(
+        author=request.form["author"],
+        date=existing.date,
+        media_file_names=list(existing_media),
+        fs_post_directory=existing.fs_post_directory,
+        md_content="",
+        post_id=existing.post_id,
+        tags=_extract_tags(request),
+        title=request.form.get("title", existing.title),
+    )
+    known_media = set(draft.media_file_names)
+    _extract_images(post=draft, request=request)
+    new_names = [name for name in draft.media_file_names if name not in known_media]
+    new_media = _media_groups(draft, new_names)
+
+    template = jinja_env.get_template("post.md.j2")
+    draft.md_content = template.render(
+        content=request.form.get("content", ""),
+        images=new_media.get("image", []),
+        videos=new_media.get("video", []),
+        md_header=draft.md_header,
+    )
+    draft.write_md()
+    return existing
 
 
 def convert_all_html(
@@ -528,21 +616,7 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     _extract_images(post=post, request=request)
 
     template = jinja_env.get_template("post.md.j2")
-
-    mimes: dict[str, list[tuple[Path, str]]] = {}
-    for media in post.media_file_names:
-        path = post.fs_media_dir / media
-        mime = magic.from_file(path, mime=True)
-        mime_type, _mime_subtype = mime.split("/")
-        if mime_type not in mimes:
-            mimes[mime_type] = []
-        mimes[mime_type].append(
-            (
-                post.relative_media_path / media,
-                mime,
-            )
-        )
-
+    mimes = _media_groups(post, post.media_file_names)
     post.md_content = template.render(
         content=request.form["content"],
         images=mimes.get("image", []),

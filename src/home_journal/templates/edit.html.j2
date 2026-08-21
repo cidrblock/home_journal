@@ -1,0 +1,167 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="google" content="notranslate" />
+    <title>edit post</title>
+    <link href="css/beer.min.css" rel="stylesheet" />
+    <link href="/css/site.css" rel="stylesheet" />
+
+    <script type="module" src="js/beer.min.js"></script>
+    <script type="module" src="js/material-dynamic-colors.min.js"></script>
+    <script src="/js/new.js"></script>
+    <script src="/js/site.js"></script>
+  </head>
+
+  <body class="dark">
+    <nav class="bottom no-margin">
+      <a href="" onclick="changeMode()">
+        <i>light_mode</i>
+        <div>Mode</div>
+      </a>
+      <a href="/">
+        <i>home</i>
+        <div>Home</div>
+      </a>
+      <a href="/new.html">
+        <i>add</i>
+        <div>New</div>
+      </a>
+    </nav>
+    <div class="modal modal_status" id="status">
+      <h5>Submitting</h5>
+      <div>Progress: <span id="progress_text"></span></div>
+      <div class="small-space"></div>
+      <div class="small-space border">
+        <div class="progress left" id="progress"></div>
+      </div>
+    </div>
+    <main
+      class="responsive"
+      style="min-height: 100dvh; display: flex; flex-direction: column;"
+    >
+      <div class="s12 page-title">
+        <h2>edit post</h2>
+      </div>
+      <div
+        class="s12"
+        style="flex-grow: 1; display: flex; flex-direction: column;"
+        id="main_body"
+      >
+        <article class="new-post" style=" flex-grow: 1;">
+          <form
+            action="/edit"
+            method="post"
+            enctype="multipart/form-data"
+            autocomplete="off"
+            id="form"
+          >
+            <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+            <div class="grid no-space">
+              <div class="s12">
+                <div class="field label border round">
+                  <input
+                    type="text"
+                    name="title"
+                    value="{{ post.title }}"
+                    required
+                  />
+                  <label>Title</label>
+                </div>
+              </div>
+              <div class="s12">
+                {% if authors %}
+                  <div class="field label suffix border round">
+                    <select name="author" id="author" required>
+                      {% for author in authors %}
+                        <option
+                          value="{{ author }}"
+                          {% if author == post.author %}selected{% endif %}
+                        >
+                          {{ author }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <label>Author</label>
+                    <i>arrow_drop_down</i>
+                  </div>
+                {% else %}
+                  <div class="field label border round">
+                    <input
+                      type="text"
+                      name="author"
+                      id="author"
+                      value="{{ post.author }}"
+                      required
+                      autocomplete="name"
+                    />
+                    <label>Author</label>
+                  </div>
+                {% endif %}
+              </div>
+              {% if tags %}
+                <div class="s12">
+                  <span style="font-size: 1rem" ;>Common tags</span>
+                </div>
+                <div class="s12 small-space"></div>
+                {% for tag in tags | sort %}
+                  <div class="s4 m3">
+                    <label class="checkbox">
+                      <input
+                        type="checkbox"
+                        name="tag-{{ tag }}"
+                        {% if tag in post.tags %}checked{% endif %}
+                      />
+                      <span>{{ tag|capitalize }}</span>
+                    </label>
+                  </div>
+                {% endfor %}
+                <div class="large-space"></div>
+              {% endif %}
+              <div class="s12">
+                <div class="field label border round">
+                  <input type="text" name="tags" value="{{ custom_tags }}" />
+                  <label>Custom tags</label>
+                </div>
+              </div>
+              <div class="s12">
+                <div class="field textarea label border extra round">
+                  <textarea id="content" name="content" required>{{ post.md_content }}</textarea>
+                  <label>Content</label>
+                </div>
+              </div>
+              <div class="s12">
+                <div class="field label prefix border round">
+                  <i>attach_file</i>
+                  <input type="text" />
+                  <input type="file" name="media" id="media" multiple />
+                  <label>Add media</label>
+                </div>
+              </div>
+              <div class="s12">
+                <div class="field label border round">
+                  <input
+                    type="password"
+                    name="passcode"
+                    required
+                    inputmode="numeric"
+                  />
+                  <label>Passcode</label>
+                </div>
+              </div>
+              <div class="s12">
+                <button class="absolute right circle extra" type="submit">
+                  <i>arrow_forward</i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </article>
+      </div>
+    </main>
+  </body>
+</html>
