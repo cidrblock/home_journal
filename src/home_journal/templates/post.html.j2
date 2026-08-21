@@ -25,6 +25,10 @@
         <i>home</i>
         <div>Home</div>
       </a>
+      <a onclick="delete_modal()">
+        <i>delete</i>
+        <div>Delete</div>
+      </a>
       <a href="/new.html">
         <i>add</i>
         <div>New</div>
@@ -71,17 +75,7 @@
     >
       <div style="flex-grow: 1; display: flex; flex-direction: column;">
         <article class="single-post" style="flex-grow:1">
-          <div class="post-header">
-            <h3>{{ post.title }}</h3>
-            <a
-              class="delete-post"
-              onclick="delete_modal()"
-              title="Delete post"
-              aria-label="Delete post"
-            >
-              <i>delete</i>
-            </a>
-          </div>
+          <h3>{{ post.title }}</h3>
           <p>
             {{ post.date.strftime('%B %d, %Y') }}
             {% if post.author %}

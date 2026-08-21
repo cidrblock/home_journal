@@ -215,24 +215,6 @@ article.single-post > .markdown-body > .video > video {
   color: var(--outline);
 }
 
-.post-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.post-header > h3 {
-  margin: 0;
-  flex-grow: 1;
-}
-
-.delete-post {
-  cursor: pointer;
-  color: var(--outline);
-  flex-shrink: 0;
-}
-
 .delete-error {
   color: var(--error);
   min-height: 1.25rem;
