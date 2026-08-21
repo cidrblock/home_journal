@@ -415,6 +415,59 @@ def _render_markdown(content: str) -> str:
     return content
 
 
+def load_site_config(site_dir: Path) -> dict[str, object]:
+    """Load optional site config.yml.
+
+    Args:
+        site_dir: The directory of the site.
+
+    Returns:
+        The config mapping, or empty if the file is missing.
+    """
+    path = site_dir / "config.yml"
+    if not path.is_file():
+        logger.info("No site config.yml found at %s", path)
+        return {}
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        logger.warning("Ignoring %s because it is not a YAML mapping", path)
+        return {}
+    logger.info("Loaded site config from %s", path)
+    return loaded
+
+
+def delete_post(site_dir: Path, post_id: str) -> bool:
+    """Delete a post directory from the site.
+
+    Args:
+        site_dir: The directory of the site.
+        post_id: The id of the post to delete.
+
+    Returns:
+        True if the post was found and removed.
+    """
+    posts_dir = site_dir / "posts"
+    posts_root = posts_dir.resolve()
+    all_posts = _populate_post_metadata(md_glob=posts_dir.rglob("*.md"), site_dir=site_dir)
+    matches = [post for post in all_posts if post.post_id == post_id]
+    if not matches:
+        return False
+
+    post_dir = matches[0].fs_post_directory.resolve()
+    if not post_dir.is_relative_to(posts_root):
+        logger.error("Refusing to delete path outside posts dir: %s", post_dir)
+        return False
+
+    shutil.rmtree(post_dir)
+    parent = post_dir.parent
+    for _ in range(2):
+        if parent == posts_root or not parent.exists() or any(parent.iterdir()):
+            break
+        parent.rmdir()
+        parent = parent.parent
+    return True
+
+
 def convert_all_html(
     site_dir: Path,
     post_id: str | None = None,

@@ -70,7 +70,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-t",
         "--tags",
-        help="A list of tags for new posts",
+        help="A list of tags for new posts (overrides config.yml)",
         type=_list_tags,
     )
 

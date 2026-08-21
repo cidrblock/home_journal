@@ -34,13 +34,54 @@
         <div>Next</div>
       </a>
     </nav>
+    <div class="modal modal_delete" id="delete">
+      <form
+        action="/delete"
+        method="post"
+        autocomplete="off"
+        id="delete_form"
+        onsubmit="return submit_delete(event)"
+      >
+        <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+        <h5>Delete this post?</h5>
+        <p>This cannot be undone.</p>
+        <div class="field label border round">
+          <input
+            type="password"
+            name="passcode"
+            id="delete_passcode"
+            required
+            inputmode="numeric"
+          />
+          <label>Passcode</label>
+        </div>
+        <p class="delete-error" id="delete_error"></p>
+        <nav>
+          <button type="button" class="border" onclick="delete_modal()">
+            Cancel
+          </button>
+          <button type="submit" class="fill">Delete</button>
+        </nav>
+      </form>
+    </div>
     <main
       class="responsive"
+      id="main_body"
       style="min-height: 100dvh; display: flex; flex-direction: column;"
     >
       <div style="flex-grow: 1; display: flex; flex-direction: column;">
         <article class="single-post" style="flex-grow:1">
-          <h3>{{ post.title }}</h3>
+          <div class="post-header">
+            <h3>{{ post.title }}</h3>
+            <a
+              class="delete-post"
+              onclick="delete_modal()"
+              title="Delete post"
+              aria-label="Delete post"
+            >
+              <i>delete</i>
+            </a>
+          </div>
           <p>
             {{ post.date.strftime('%B %d, %Y') }}
             {% if post.author %}

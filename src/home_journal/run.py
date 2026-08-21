@@ -1,5 +1,6 @@
 """Form to post."""
 import argparse
+import hmac
 import logging
 import pathlib
 
@@ -15,7 +16,9 @@ from waitress import serve
 
 from .utils import build_thumbnails
 from .utils import convert_all_html
+from .utils import delete_post
 from .utils import initialize_new_post
+from .utils import load_site_config
 from .utils import render_search_results
 from .utils import write_author_indices
 from .utils import write_index
@@ -28,6 +31,17 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from werkzeug.wrappers import Response as BaseResponse
+
+
+@app.route("/config.yml")
+@app.route("/config.yaml")
+def endpoint_hide_config() -> Response:
+    """Do not serve the site config file.
+
+    Returns:
+        A 404 response.
+    """
+    return Response(status=404)
 
 
 @app.route("/")
@@ -72,12 +86,63 @@ def endpoint_convert_all() -> str:
         The count of posts converted.
     """
     logger.debug("Converting all posts")
-    revised, all_posts = convert_all_html(app.config["site_dir"])
-    build_thumbnails(all_posts)
-    write_index(all_posts, site_dir=app.config["site_dir"])
-    write_author_indices(all_posts, site_dir=app.config["site_dir"])
-    write_tag_indices(all_posts, site_dir=app.config["site_dir"])
+    revised, all_posts = _rebuild_site()
     return f"Built {len(revised)} of {len(all_posts)} posts."
+
+
+def _rebuild_site() -> tuple[list, list]:
+    """Rebuild HTML, thumbnails, and indices for the whole site.
+
+    Returns:
+        The revised posts and the full post list.
+    """
+    site_dir = app.config["site_dir"]
+    revised, all_posts = convert_all_html(site_dir)
+    build_thumbnails(all_posts)
+    write_index(all_posts, site_dir=site_dir)
+    write_author_indices(all_posts, site_dir=site_dir)
+    write_tag_indices(all_posts, site_dir=site_dir)
+    return revised, all_posts
+
+
+def _passcode_matches(provided: str) -> bool:
+    """Return True if the provided passcode matches the configured one.
+
+    Args:
+        provided: The passcode from the request.
+
+    Returns:
+        True if the passcode is configured and matches.
+    """
+    expected = app.config.get("delete_passcode")
+    if not expected:
+        return False
+    provided_text = str(provided)
+    expected_text = str(expected)
+    if len(provided_text) != len(expected_text):
+        return False
+    return hmac.compare_digest(provided_text, expected_text)
+
+
+@app.route("/delete", methods=["POST"])
+def endpoint_delete() -> "BaseResponse | Response":
+    """Delete a post after the passcode is confirmed.
+
+    Returns:
+        A redirect to the index, or an error response.
+    """
+    if not _passcode_matches(request.form.get("passcode", "")):
+        logger.warning("Rejected post delete with invalid passcode")
+        return Response("Invalid passcode", status=403)
+
+    post_id = request.form.get("post_id", "")
+    if not post_id or not delete_post(app.config["site_dir"], post_id):
+        logger.warning("Post not found for delete: %s", post_id)
+        return Response("Post not found", status=404)
+
+    logger.info("Deleted post %s", post_id)
+    _rebuild_site()
+    return redirect("/")
 
 
 @app.route("/", methods=["POST"])
@@ -109,8 +174,14 @@ def run_server(args: argparse.Namespace) -> None:
     Args:
         args: The parsed command line arguments.
     """
-    app.config["site_dir"] = pathlib.Path(args.site_directory)
-    app.config["tags"] = args.tags
+    site_dir = pathlib.Path(args.site_directory)
+    config = load_site_config(site_dir)
+    raw_tags = args.tags if args.tags else config.get("tags")
+    raw_authors = config.get("authors")
+    app.config["site_dir"] = site_dir
+    app.config["tags"] = raw_tags if isinstance(raw_tags, list) else []
+    app.config["authors"] = raw_authors if isinstance(raw_authors, list) else []
+    app.config["delete_passcode"] = config.get("delete_passcode")
     app.static_folder = args.site_directory
     logger.info("Starting server")
     if args.init:

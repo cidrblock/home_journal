@@ -30,7 +30,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - No javascript frameworks
 - Minimal dependencies
 - No need to edit posts from the UI
-- No need to delete posts from the UI
+- Passcode-protected post delete from the UI
 - Ability to regenerate all html files
 - Ability to add new posts with a text editor
 
@@ -51,6 +51,21 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - Static files for all but new entry submission
 - Tags page
 - Video uploads
+- Passcode-protected post delete
+
+## Site config
+
+Optional `config.yml` in the site directory holds house-specific settings. The file is not served over HTTP.
+
+```
+delete_passcode: "0000"
+tags:
+  - family
+authors:
+  - Alex
+```
+
+`--tags` on the command line overrides `tags` from this file. `authors` is reserved for the new-post author dropdown.
 
 ## Future enhancements
 
@@ -89,7 +104,7 @@ options:
   -p PORT, --port PORT  Port to run the server on
   -s SITE_DIRECTORY, --site_directory SITE_DIRECTORY
                         Path to the site directory
-  -t TAGS, --tags TAGS  A list of tags for new posts
+  -t TAGS, --tags TAGS  A list of tags for new posts (overrides config.yml)
 ```
 
 ## In a container
