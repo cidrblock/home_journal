@@ -62,67 +62,39 @@
       <div class="main">
         {% for post in posts|reverse %}
           <div class="post">
-            {% if post.thumbnail_url %}
-              <article class="with-image">
-                <a href="{{ post.post_url }}">
-                  <img
-                    class="responsive large article-image"
-                    src="{{ post.thumbnail_url }}"
-                  />
-                </a>
-                <div class="article-meta">
-                  <h6><a href="{{ post.post_url }}">{{ post.title }}</a></h6>
-                  <p>
-                    {{ post.date.strftime('%B %d, %Y') }}
-                    {% if post.author %}
-                      by
-                      <a
-                        href="/authors/{{ post.author_index }}"
-                        class="author_link"
-                        >{{ post.author }}</a
-                      >
-                    {% endif %}
-                  </p>
-
-                  {% if post.tags %}
-                    <p>
-                      {% for tag in post.tags %}
-                        <a href="/tags/{{ tag }}.html" class="deemphasisze">
-                          {{ tag }}{{ " | " if not loop.last else"" }}
-                        </a>
-                      {% endfor %}
-                    </p>
+            <article class="{{ 'with-image' if post.thumbnail_url else 'without-image' }}">
+              <a class="post-cover" href="{{ post.post_url }}" aria-label="{{ post.title }}"></a>
+              {% if post.thumbnail_url %}
+                <img
+                  class="responsive large article-image"
+                  src="{{ post.thumbnail_url }}"
+                  alt=""
+                />
+              {% endif %}
+              <div class="article-meta">
+                <h6>{{ post.title }}</h6>
+                <p>
+                  {{ post.date.strftime('%B %d, %Y') }}
+                  {% if post.author %}
+                    by
+                    <a
+                      href="/authors/{{ post.author_index }}"
+                      class="author_link"
+                      >{{ post.author }}</a
+                    >
                   {% endif %}
-                </div>
-              </article>
-            {% else %}
-              <article class="without-image">
-                <div>
-                  <h6><a href="{{ post.post_url }}">{{ post.title }}</a></h6>
+                </p>
+                {% if post.tags %}
                   <p>
-                    {{ post.date.strftime('%B %d, %Y') }}
-                    {% if post.author %}
-                      by
-                      <a
-                        href="/authors/{{ post.author_index }}"
-                        class="author_link"
-                        >{{ post.author }}</a
-                      >
-                    {% endif %}
+                    {% for tag in post.tags %}
+                      <a href="/tags/{{ tag }}.html" class="deemphasisze">
+                        {{ tag }}{{ " | " if not loop.last else"" }}
+                      </a>
+                    {% endfor %}
                   </p>
-
-                  {% if post.tags %}
-                    <p>
-                      {% for tag in post.tags %}
-                        <a href="/tags/{{ tag }}.html" class="deemphasisze">
-                          {{ tag }}{{ " | " if not loop.last else"" }}
-                        </a>
-                      {% endfor %}
-                    </p>
-                  {% endif %}
-                </div>
-              </article>
-            {% endif %}
+                {% endif %}
+              </div>
+            </article>
           </div>
         {% endfor %}
       </div>

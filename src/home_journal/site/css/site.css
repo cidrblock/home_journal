@@ -148,6 +148,7 @@ article {
 }
 
 .main > .post > article {
+  position: relative;
   border-radius: 0;
 }
 
@@ -166,8 +167,15 @@ article {
   padding-top: 0.5rem;
 }
 
-.main > .post > article > a {
-  width: inherit;
+.main > .post > article > .post-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.main > .post > article .article-meta a {
+  position: relative;
+  z-index: 1;
 }
 
 article.single-post > .markdown-body {
