@@ -228,6 +228,10 @@ article.single-post > .markdown-body > .video > video {
 }
 .modal_delete {
   top: 30%;
+  z-index: 200;
+}
+#delete-overlay {
+  z-index: 199;
 }
 .modal_search > form > .field {
   margin-bottom: 0rem;

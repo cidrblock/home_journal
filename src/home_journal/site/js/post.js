@@ -2,6 +2,8 @@ document.onkeydown = checkKey;
 
 function checkKey(e) {
   e = e || window.event;
+  var modal = document.getElementById("delete-dialog");
+  var modal_open = modal && modal.classList.contains("active");
   const tag = (e.target && e.target.tagName) || "";
   if (tag === "INPUT" || tag === "TEXTAREA") {
     if (e.key === "Escape") {
@@ -12,7 +14,13 @@ function checkKey(e) {
 
   if (e.key === "Escape") {
     close_delete_modal();
-  } else if (e.keyCode == "37") {
+    return;
+  }
+  if (modal_open) {
+    return;
+  }
+
+  if (e.keyCode == "37") {
     const elem = document.getElementById("previous");
     window.location.href = elem.href;
   } else if (e.keyCode == "39") {
@@ -22,29 +30,37 @@ function checkKey(e) {
 }
 
 function delete_modal() {
-  var modal = document.getElementById("delete");
-  var main_body = document.getElementById("main_body");
-  if (modal.style.visibility == "visible") {
+  var modal = document.getElementById("delete-dialog");
+  if (modal.classList.contains("active")) {
     close_delete_modal();
   } else {
-    modal.style.visibility = "visible";
-    modal.style.opacity = "100%";
-    main_body.style.opacity = "20%";
-    setTimeout(() => {
-      var passcode = document.getElementById("delete_passcode");
-      passcode.focus();
-      passcode.select();
-    }, 200);
+    open_delete_modal();
   }
 }
 
+function open_delete_modal() {
+  document.getElementById("delete-dialog").classList.add("active");
+  document.getElementById("delete-overlay").classList.add("active");
+  setTimeout(() => {
+    var passcode = document.getElementById("delete_passcode");
+    passcode.focus();
+    passcode.select();
+  }, 200);
+}
+
 function close_delete_modal() {
-  var modal = document.getElementById("delete");
-  var main_body = document.getElementById("main_body");
-  modal.style.visibility = "hidden";
-  modal.style.opacity = "0%";
-  main_body.style.opacity = "100%";
-  document.getElementById("delete_error").textContent = "";
+  var modal = document.getElementById("delete-dialog");
+  var overlay = document.getElementById("delete-overlay");
+  if (modal) {
+    modal.classList.remove("active");
+  }
+  if (overlay) {
+    overlay.classList.remove("active");
+  }
+  var error = document.getElementById("delete_error");
+  if (error) {
+    error.textContent = "";
+  }
 }
 
 function submit_delete(event) {

@@ -7,6 +7,8 @@
     <link href="/css/beer.min.css" rel="stylesheet" />
     <link href="/css/site.css" rel="stylesheet" />
     <script src="/js/lightense.min.js"></script>
+    <script type="module" src="/js/beer.min.js"></script>
+    <script type="module" src="/js/material-dynamic-colors.min.js"></script>
     <script src="/js/post.js"></script>
     <script src="/js/site.js"></script>
   </head>
@@ -25,7 +27,7 @@
         <i>home</i>
         <div>Home</div>
       </a>
-      <a onclick="delete_modal()">
+      <a href="#" onclick="delete_modal(); return false;">
         <i>delete</i>
         <div>Delete</div>
       </a>
@@ -38,7 +40,8 @@
         <div>Next</div>
       </a>
     </nav>
-    <div class="modal modal_delete" id="delete">
+    <div class="overlay" id="delete-overlay" onclick="close_delete_modal()"></div>
+    <div class="modal modal_delete" id="delete-dialog">
       <form
         action="/delete"
         method="post"
@@ -61,7 +64,7 @@
         </div>
         <p class="delete-error" id="delete_error"></p>
         <nav>
-          <button type="button" class="border" onclick="delete_modal()">
+          <button type="button" class="border" onclick="close_delete_modal()">
             Cancel
           </button>
           <button type="submit" class="fill">Delete</button>
