@@ -63,7 +63,6 @@
         {% for post in posts|reverse %}
           <div class="post">
             <article class="{{ 'with-image' if post.thumbnail_url else 'without-image' }}">
-              <a class="post-cover" href="{{ post.post_url }}" aria-label="{{ post.title }}"></a>
               {% if post.thumbnail_url %}
                 <img
                   class="responsive large article-image"
@@ -72,7 +71,9 @@
                 />
               {% endif %}
               <div class="article-meta">
-                <h6>{{ post.title }}</h6>
+                <h6>
+                  <a class="post-cover" href="{{ post.post_url }}">{{ post.title }}</a>
+                </h6>
                 <p>
                   {{ post.date.strftime('%B %d, %Y') }}
                   {% if post.author %}

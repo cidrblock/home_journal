@@ -167,15 +167,20 @@ article {
   padding-top: 0.5rem;
 }
 
-.main > .post > article > .post-cover {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+.main > .post > article > img {
+  pointer-events: none;
 }
 
-.main > .post > article .article-meta a {
-  position: relative;
+.main > .post > article .post-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   z-index: 1;
+}
+
+.main > .post > article .article-meta a:not(.post-cover) {
+  position: relative;
+  z-index: 2;
 }
 
 article.single-post > .markdown-body {
