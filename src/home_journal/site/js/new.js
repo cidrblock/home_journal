@@ -18,7 +18,10 @@ function store() {
 
 window.onload = function (e) {
   var author = document.getElementById("author");
-  author.value = localStorage.getItem("author");
+  var saved = localStorage.getItem("author");
+  if (saved) {
+    author.value = saved;
+  }
 
   document.getElementById("form").addEventListener("submit", function (e) {
     //prevent regular form posting

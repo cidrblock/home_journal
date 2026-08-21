@@ -52,6 +52,7 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - Tags page
 - Video uploads
 - Passcode-protected post delete
+- Author dropdown from site config
 
 ## Site config
 
@@ -65,7 +66,7 @@ authors:
   - Alex
 ```
 
-`--tags` on the command line overrides `tags` from this file. `authors` is reserved for the new-post author dropdown.
+`--tags` on the command line overrides `tags` from this file. `authors` is the fixed list for the new-post author dropdown.
 
 ## Future enhancements
 

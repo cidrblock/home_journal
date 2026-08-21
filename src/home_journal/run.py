@@ -61,7 +61,13 @@ def endpoint_new() -> Response:
     Returns:
         The new.html file with the tags.
     """
-    return Response(render_template("new.html.j2", tags=app.config["tags"]))
+    return Response(
+        render_template(
+            "new.html.j2",
+            tags=app.config["tags"],
+            authors=app.config["authors"],
+        )
+    )
 
 
 @app.route("/search", methods=["POST"])
@@ -146,12 +152,18 @@ def endpoint_delete() -> "BaseResponse | Response":
 
 
 @app.route("/", methods=["POST"])
-def endpoint_post() -> "BaseResponse":
+def endpoint_post() -> "BaseResponse | Response":
     """Create a new post from the form data and redirect to it.
 
     Returns:
         A redirect to the new post.
     """
+    allowed_authors = app.config.get("authors") or []
+    author = request.form.get("author", "")
+    if allowed_authors and author not in allowed_authors:
+        logger.warning("Rejected post with invalid author: %s", author)
+        return Response("Invalid author", status=400)
+
     site_dir = app.config["site_dir"]
     posts_dir = app.config["site_dir"] / "posts"
     post = initialize_new_post(request=request, posts_dir=posts_dir)

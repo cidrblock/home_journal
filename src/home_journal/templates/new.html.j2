@@ -68,16 +68,28 @@
                 </div>
               </div>
               <div class="s12">
-                <div class="field label border round">
-                  <input
-                    type="text"
-                    name="author"
-                    id="author"
-                    required
-                    autocomplete="name"
-                  />
-                  <label>Author</label>
-                </div>
+                {% if authors %}
+                  <div class="field label suffix border round">
+                    <select name="author" id="author" required>
+                      {% for author in authors %}
+                        <option value="{{ author }}">{{ author }}</option>
+                      {% endfor %}
+                    </select>
+                    <label>Author</label>
+                    <i>arrow_drop_down</i>
+                  </div>
+                {% else %}
+                  <div class="field label border round">
+                    <input
+                      type="text"
+                      name="author"
+                      id="author"
+                      required
+                      autocomplete="name"
+                    />
+                    <label>Author</label>
+                  </div>
+                {% endif %}
               </div>
               {% if tags %}
                 <div class="s12">
