@@ -28,17 +28,21 @@ body.light {
   --body: #fff;
   --overlay: rgb(0 0 0 / 0.5);
   --active: rgb(0 0 0 / 0.1);
-  --elevate1: 0 0.125rem 0.125rem 0 rgb(0 0 0 / 0.14),
+  --elevate1:
+    0 0.125rem 0.125rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 0.3125rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.0625rem -0.125rem rgb(0 0 0 / 0.2);
-  --elevate2: 0 0.375rem 0.625rem 0 rgb(0 0 0 / 0.14),
+  --elevate2:
+    0 0.375rem 0.625rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 1.125rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.3125rem -0.0625rem rgb(0 0 0 / 0.3);
-  --elevate3: 0 0.625rem 1rem 0 rgb(0 0 0 / 0.14),
+  --elevate3:
+    0 0.625rem 1rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 1.9375rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.5625rem 0 rgb(0 0 0 / 0.4);
   --size: 16px;
-  --font: "Roboto Flex", "Roboto", sans-serif, system-ui, "Segoe UI", "Oxygen",
+  --font:
+    "Roboto Flex", "Roboto", sans-serif, system-ui, "Segoe UI", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     "Helvetica", "Arial";
   --speed1: 0.1s;
@@ -75,17 +79,21 @@ body.dark {
   --body: #000;
   --overlay: rgb(0 0 0 / 0.5);
   --active: rgb(255 255 255 / 0.2);
-  --elevate1: 0 0.125rem 0.125rem 0 rgb(0 0 0 / 0.14),
+  --elevate1:
+    0 0.125rem 0.125rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 0.3125rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.0625rem -0.125rem rgb(0 0 0 / 0.2);
-  --elevate2: 0 0.375rem 0.625rem 0 rgb(0 0 0 / 0.14),
+  --elevate2:
+    0 0.375rem 0.625rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 1.125rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.3125rem -0.0625rem rgb(0 0 0 / 0.3);
-  --elevate3: 0 0.625rem 1rem 0 rgb(0 0 0 / 0.14),
+  --elevate3:
+    0 0.625rem 1rem 0 rgb(0 0 0 / 0.14),
     0 0.0625rem 1.9375rem 0 rgb(0 0 0 / 0.12),
     0 0.1875rem 0.5625rem 0 rgb(0 0 0 / 0.4);
   --size: 16px;
-  --font: "Roboto Flex", "Roboto", sans-serif, system-ui, "Segoe UI", "Oxygen",
+  --font:
+    "Roboto Flex", "Roboto", sans-serif, system-ui, "Segoe UI", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     "Helvetica", "Arial";
   --speed1: 0.1s;
@@ -107,8 +115,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-cyrillic-ext.woff2) format("woff2");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
+  unicode-range:
+    U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -135,7 +143,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-vietnamese.woff2) format("woff2");
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
     U+01AF-01B0, U+1EA0-1EF9, U+20AB;
 }
 @font-face {
@@ -145,8 +154,9 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin-ext.woff2) format("woff2");
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
-    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range:
+    U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -155,9 +165,10 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -166,8 +177,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-cyrillic-ext.woff2) format("woff2");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
+  unicode-range:
+    U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -194,7 +205,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-vietnamese.woff2) format("woff2");
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
     U+01AF-01B0, U+1EA0-1EF9, U+20AB;
 }
 @font-face {
@@ -204,8 +216,9 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin-ext.woff2) format("woff2");
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
-    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range:
+    U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -214,9 +227,10 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -225,8 +239,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-cyrillic-ext.woff2) format("woff2");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
+  unicode-range:
+    U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -253,7 +267,8 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-vietnamese.woff2) format("woff2");
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
     U+01AF-01B0, U+1EA0-1EF9, U+20AB;
 }
 @font-face {
@@ -263,8 +278,9 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin-ext.woff2) format("woff2");
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
-    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range:
+    U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: Roboto Flex;
@@ -273,9 +289,10 @@ body.dark {
   font-stretch: 100%;
   font-display: swap;
   src: url(roboto-flex-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
 }
 * {
   -webkit-tap-highlight-color: transparent;
@@ -1745,7 +1762,9 @@ button {
   background-color: var(--primary);
   margin: 0 0.5rem;
   border-radius: 0.5rem;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   user-select: none;
   gap: 1rem;
@@ -1849,7 +1868,9 @@ article {
   padding: 1rem;
   border-radius: 0.75rem;
   display: block;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
 }
 * + article {
@@ -1879,7 +1900,9 @@ article.large {
   margin: 0 0.5rem;
   text-transform: none;
   border-radius: 0.5rem;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   user-select: none;
   gap: 1rem;
@@ -2004,7 +2027,9 @@ nav.right:not(.s, .m, .l) ~ .responsive {
   text-align: left;
   border-radius: 0.25rem;
   transform: scale(0.8) translateY(120%);
-  transition: var(--speed2) all, 0s background-color;
+  transition:
+    var(--speed2) all,
+    0s background-color;
 }
 .dropdown.no-wrap {
   width: auto;
@@ -2356,7 +2381,9 @@ input[type="file"] {
   left: 1rem;
   font-size: 1rem;
   transform: translateY(-50%);
-  transition: var(--speed2) all, 0s background-color;
+  transition:
+    var(--speed2) all,
+    0s background-color;
   z-index: 0;
 }
 .field.label.textarea.small > label {
@@ -2969,7 +2996,9 @@ video.circle,
 video.responsive {
   object-fit: cover;
   object-position: center;
-  transition: var(--speed3) transform, var(--speed3) border-radius,
+  transition:
+    var(--speed3) transform,
+    var(--speed3) border-radius,
     var(--speed3) padding;
   height: 3rem;
   width: 3rem;
@@ -3136,7 +3165,9 @@ button > span + img.responsive {
   max-height: 80%;
   overflow-x: hidden;
   overflow-y: auto;
-  transition: var(--speed3) all, 0s background-color;
+  transition:
+    var(--speed3) all,
+    0s background-color;
   transform: translate(-50%, -4rem);
 }
 .modal:not(.left, .right, .top, .bottom) {
@@ -3504,7 +3535,9 @@ nav:not(.left, .right) > .large-space {
   color: var(--on-background);
   background-color: var(--overlay);
   z-index: 100;
-  transition: var(--speed3) all, 0s background-color;
+  transition:
+    var(--speed3) all,
+    0s background-color;
 }
 nav > .overlay {
   z-index: 0;

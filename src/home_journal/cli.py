@@ -9,7 +9,6 @@ from importlib import resources
 
 from .run import run_server
 
-
 logger = logging.getLogger()
 
 
