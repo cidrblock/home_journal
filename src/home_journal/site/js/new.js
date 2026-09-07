@@ -41,7 +41,7 @@ window.onload = function (e) {
         main_body.style.opacity = "20%";
         progress_text.innerText = "Starting";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -51,7 +51,7 @@ window.onload = function (e) {
         ui("#progress", percent);
         progress_text.innerText = Math.round(percent) + "%";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -59,7 +59,7 @@ window.onload = function (e) {
       function (event) {
         progress_text.innerText = "Processing";
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -70,7 +70,7 @@ window.onload = function (e) {
           window.location.replace(event.currentTarget.responseURL);
         }
       },
-      false
+      false,
     );
 
     xhr.open(this.getAttribute("method"), this.getAttribute("action"), true);

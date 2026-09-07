@@ -70,19 +70,21 @@ function submit_delete(event) {
   fetch("/delete", {
     method: "POST",
     body: new FormData(event.target),
-  }).then((res) => {
-    if (res.ok) {
-      window.location.href = "/";
-      return;
-    }
-    if (res.status === 403) {
-      error.textContent = "Wrong passcode";
-      return;
-    }
-    error.textContent = "Could not delete this post";
-  }).catch(() => {
-    error.textContent = "Could not delete this post";
-  });
+  })
+    .then((res) => {
+      if (res.ok) {
+        window.location.href = "/";
+        return;
+      }
+      if (res.status === 403) {
+        error.textContent = "Wrong passcode";
+        return;
+      }
+      error.textContent = "Could not delete this post";
+    })
+    .catch(() => {
+      error.textContent = "Could not delete this post";
+    });
   return false;
 }
 
@@ -91,5 +93,5 @@ window.addEventListener(
   function () {
     Lightense("img");
   },
-  false
+  false,
 );
