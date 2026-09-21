@@ -87,6 +87,9 @@ Decide on the directory where you wish to place the site files. (e.g. `/home/use
 home-journal --init --site-directory /home/user/home_journal
 ```
 
+Uploads accept multiple files in one post up to 250 MiB combined by default. Use
+`--max-upload-size` to set a different limit in bytes.
+
 Each time home-journal is run with the `--init` flag it will copy the css, js, and icons from the source tree into the site. If these files have been customized in the site directory, those changes will be overwritten if the `--init` flag is used again.
 
 Until stable releases are available, the css and js files may change so running with the `--init` flag will be necessary. Improvements to the css and js files are welcomed as pull requests to the repository.
@@ -94,13 +97,15 @@ Until stable releases are available, the css and js files may change so running 
 ## Help
 
 ```
-usage: home-journal [-h] [-i] [-l {debug,info,warning,error,critical}] [-f LOG_FILE] [-p PORT] -s SITE_DIRECTORY [-t TAGS]
+usage: home-journal [-h] [-i] [-l {debug,info,warning,error,critical}] [--max-upload-size MAX_UPLOAD_SIZE] [-f LOG_FILE] [-p PORT] -s SITE_DIRECTORY [-t TAGS]
 
 options:
   -h, --help            show this help message and exit
   -i, --init            Initialize the site with css, js, and icons
   -l {debug,info,warning,error,critical}, --log_level {debug,info,warning,error,critical}
                         Log level
+  --max-upload-size MAX_UPLOAD_SIZE
+                        Maximum combined upload size in bytes
   -f LOG_FILE, --log_file LOG_FILE
                         Log file
   -p PORT, --port PORT  Port to run the server on

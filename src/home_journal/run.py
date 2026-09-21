@@ -30,6 +30,8 @@ from .utils import write_tag_indices
 
 app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
 logger = logging.getLogger(__name__)
+DEFAULT_MAX_UPLOAD_SIZE = 250 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = DEFAULT_MAX_UPLOAD_SIZE
 
 
 if TYPE_CHECKING:
@@ -69,6 +71,7 @@ def endpoint_new() -> Response:
             "new.html.j2",
             tags=app.config["tags"],
             authors=app.config["authors"],
+            max_upload_size=app.config["MAX_CONTENT_LENGTH"],
         )
     )
 
@@ -177,6 +180,7 @@ def endpoint_edit() -> "BaseResponse | Response":
                 authors=app.config["authors"],
                 custom_tags=", ".join(custom_tags),
                 edit_content=edit_content,
+                max_upload_size=app.config["MAX_CONTENT_LENGTH"],
             )
         )
 
@@ -247,6 +251,7 @@ def run_server(args: argparse.Namespace) -> None:
     app.config["tags"] = raw_tags if isinstance(raw_tags, list) else []
     app.config["authors"] = raw_authors if isinstance(raw_authors, list) else []
     app.config["delete_passcode"] = config.get("delete_passcode")
+    app.config["MAX_CONTENT_LENGTH"] = args.max_upload_size
     app.static_folder = args.site_directory
     logger.info("Starting server")
     if args.init:

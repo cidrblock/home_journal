@@ -7,6 +7,7 @@ import shutil
 
 from importlib import resources
 
+from .run import DEFAULT_MAX_UPLOAD_SIZE
 from .run import run_server
 
 
@@ -45,6 +46,12 @@ def _parse_args() -> argparse.Namespace:
         help="Log level",
         default="INFO",
         choices=["debug", "info", "warning", "error", "critical"],
+    )
+    parser.add_argument(
+        "--max-upload-size",
+        type=int,
+        help="Maximum combined upload size in bytes",
+        default=DEFAULT_MAX_UPLOAD_SIZE,
     )
     parser.add_argument(
         "-f",

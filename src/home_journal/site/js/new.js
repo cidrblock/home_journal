@@ -32,6 +32,24 @@ window.onload = function (e) {
     var status = document.getElementById("status");
     var main_body = document.getElementById("main_body");
     var progress_text = document.getElementById("progress_text");
+    var files = document.getElementById("media").files;
+    var maxUploadSize = Number(this.dataset.maxUploadSize);
+    var uploadSize = Array.from(files).reduce(function (total, file) {
+      return total + file.size;
+    }, 0);
+
+    function showFailure(message) {
+      status.querySelector("h5").innerText = "Upload failed";
+      progress_text.innerText = message;
+      main_body.style.opacity = "100%";
+    }
+
+    if (maxUploadSize > 0 && uploadSize > maxUploadSize) {
+      status.style.visibility = "visible";
+      status.style.opacity = "100%";
+      showFailure("Selected files exceed the upload limit");
+      return;
+    }
 
     xhr.upload.addEventListener(
       "loadstart",
@@ -39,6 +57,7 @@ window.onload = function (e) {
         status.style.visibility = "visible";
         status.style.opacity = "100%";
         main_body.style.opacity = "20%";
+        status.querySelector("h5").innerText = "Submitting";
         progress_text.innerText = "Starting";
       },
       false
@@ -66,9 +85,23 @@ window.onload = function (e) {
       "readystatechange",
       function (event) {
         if (event.target.readyState == 4) {
-          ui("#progress", 100);
-          window.location.replace(event.currentTarget.responseURL);
+          if (event.target.status >= 200 && event.target.status < 300) {
+            ui("#progress", 100);
+            window.location.replace(event.currentTarget.responseURL);
+          } else if (event.target.status == 413) {
+            showFailure("Selected files exceed the upload limit");
+          } else {
+            showFailure("The upload could not be completed");
+          }
         }
+      },
+      false
+    );
+
+    xhr.addEventListener(
+      "error",
+      function () {
+        showFailure("The upload could not be completed");
       },
       false
     );
