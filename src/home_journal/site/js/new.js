@@ -16,6 +16,40 @@ function store() {
   localStorage.setItem("author", author.value);
 }
 
+var wakeLock = null;
+var uploadInProgress = false;
+
+async function requestWakeLock() {
+  if (!uploadInProgress || !("wakeLock" in navigator)) {
+    return;
+  }
+
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    console.log("Screen Wake Lock active");
+  } catch (err) {
+    console.error(`Wake Lock failed: ${err.name}, ${err.message}`);
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock === null) {
+    return;
+  }
+
+  var lock = wakeLock;
+  wakeLock = null;
+  lock.release().then(function () {
+    console.log("Screen Wake Lock released");
+  });
+}
+
+document.addEventListener("visibilitychange", function () {
+  if (uploadInProgress && document.visibilityState === "visible") {
+    requestWakeLock();
+  }
+});
+
 window.onload = function (e) {
   var author = document.getElementById("author");
   if (window.location.pathname !== "/edit") {
@@ -39,6 +73,8 @@ window.onload = function (e) {
     }, 0);
 
     function showFailure(message) {
+      uploadInProgress = false;
+      releaseWakeLock();
       status.querySelector("h5").innerText = "Upload failed";
       progress_text.innerText = message;
       main_body.style.opacity = "100%";
@@ -50,6 +86,9 @@ window.onload = function (e) {
       showFailure("Selected files exceed the upload limit");
       return;
     }
+
+    uploadInProgress = true;
+    requestWakeLock();
 
     xhr.upload.addEventListener(
       "loadstart",
@@ -86,6 +125,8 @@ window.onload = function (e) {
       function (event) {
         if (event.target.readyState == 4) {
           if (event.target.status >= 200 && event.target.status < 300) {
+            uploadInProgress = false;
+            releaseWakeLock();
             ui("#progress", 100);
             window.location.replace(event.currentTarget.responseURL);
           } else if (event.target.status == 413) {
@@ -102,6 +143,22 @@ window.onload = function (e) {
       "error",
       function () {
         showFailure("The upload could not be completed");
+      },
+      false
+    );
+
+    xhr.addEventListener(
+      "abort",
+      function () {
+        showFailure("The upload was canceled");
+      },
+      false
+    );
+
+    xhr.addEventListener(
+      "timeout",
+      function () {
+        showFailure("The upload timed out");
       },
       false
     );

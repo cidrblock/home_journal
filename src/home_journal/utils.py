@@ -227,11 +227,9 @@ def _extract_images(post: NewPost, request: Request) -> None:
 
     all_media = request.files.getlist("media")
 
-    logger.debug(all_media)
-    logger.debug(len(all_media))
+    logger.debug("Found %s uploaded media files", len(all_media))
 
     for media in all_media:
-        logger.debug(media)
         if not media:
             continue
         if not isinstance(media.filename, str):
@@ -240,11 +238,16 @@ def _extract_images(post: NewPost, request: Request) -> None:
         # Make minimal changes to the filename
         filename = media.filename.replace(" ", "_")
         media_path = post.fs_media_dir / filename
+        logger.info("Saving uploaded media: filename=%s path=%s", filename, media_path)
         media.save(media_path)
+        logger.info(
+            "Saved uploaded media: filename=%s bytes=%s",
+            filename,
+            media_path.stat().st_size,
+        )
 
-        logger.debug(media)
         mimetype = magic.from_file(media_path, mime=True)
-        logger.debug(mimetype)
+        logger.debug("Detected uploaded media type: filename=%s mimetype=%s", filename, mimetype)
         if mimetype.startswith("image/"):
             eop = b"\x66\x74\x79\x70\x69\x73\x6F\x6D"
             with media_path.open("r+b") as image:
@@ -282,18 +285,36 @@ def _extract_images(post: NewPost, request: Request) -> None:
                         "-map",
                         "0:0",
                         "-c:v",
-                        "libx264",
-                        "-crf",
-                        "18",
+                        "libopenh264",
+                        "-profile:v",
+                        "main",
+                        "-rc_mode",
+                        "quality",
+                        "-pix_fmt",
+                        "yuv420p",
                         "-c:a",
                         "copy",
                         str(mp4_h264_path),
                     ],
                     check=False,
+                    capture_output=True,
+                    text=True,
                 )
-                logger.debug(_subproc.stderr)
-                logger.debug(_subproc.stdout)
-                post.media_file_names.append(mp4_h264_path.name)
+                logger.info(
+                    "Finished motion photo conversion: filename=%s returncode=%s output_exists=%s",
+                    filename,
+                    _subproc.returncode,
+                    mp4_h264_path.is_file(),
+                )
+                if _subproc.returncode != 0 or not mp4_h264_path.is_file():
+                    logger.warning(
+                        "Motion photo conversion failed: filename=%s returncode=%s stderr=%s",
+                        filename,
+                        _subproc.returncode,
+                        _subproc.stderr.strip()[-2000:],
+                    )
+                else:
+                    post.media_file_names.append(mp4_h264_path.name)
 
         else:
             post.media_file_names.append(filename)
@@ -324,6 +345,11 @@ def _media_groups(post: NewPost, names: list[str]) -> dict[str, list[tuple[Path,
 
 
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+_PREVIEW_PREFIX = "preview_"
+_PANORAMA_PREFIX = "pano_"
+_PREVIEW_SIZE = (640, 640)
+_PANORAMA_SIZE = (8192, 8192)
+_PANORAMA_IMAGE = re.compile(r"\.pano\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE)
 _TRAILING_IMAGE = re.compile(
     r"[ \t]*!\[\]\(media/([^)\s]+)\)[ \t]*(?:\r?\n)?\Z",
 )
@@ -532,7 +558,93 @@ def _render_markdown(content: str) -> str:
         content,
         options=cmarkgfmOptions.CMARK_OPT_UNSAFE,
     )
+    content = re.sub(
+        r'<p><img src="(media/[^"\s]+)" alt="([^"]*)" /></p>',
+        lambda match: (
+            f'<p class="progressive-image pannellum-panorama" '
+            f'data-panorama="{match.group(1)}"><img '
+            f'src="{_preview_media_path(match.group(1))}" '
+            f'data-full-src="{match.group(1)}" '
+            f'data-panorama-src="{_panorama_media_path(match.group(1))}" '
+            f'alt="{match.group(2)}" loading="eager" '
+            f'decoding="async" /></p>'
+            if _PANORAMA_IMAGE.search(match.group(1))
+            else (
+                f'<p class="progressive-image"><img '
+                f'src="{_preview_media_path(match.group(1))}" '
+                f'data-full-src="{match.group(1)}" alt="{match.group(2)}" loading="eager" '
+                f'decoding="async" /></p>'
+            )
+        ),
+        content,
+        flags=re.IGNORECASE,
+    )
     return content
+
+
+def _preview_media_path(media_path: str) -> str:
+    """Return the generated preview path for a media URL."""
+    path = Path(media_path)
+    return str(path.with_name(_PREVIEW_PREFIX + path.name))
+
+
+def _panorama_media_path(media_path: str) -> str:
+    """Return the bounded panorama path for a media URL."""
+    path = Path(media_path)
+    return str(path.with_name(_PANORAMA_PREFIX + path.name))
+
+
+def build_image_previews(site_dir: Path) -> int:
+    """Build small previews for all still images under the site directory."""
+    count = 0
+    for image_path in (site_dir / "posts").rglob("*"):
+        if not image_path.is_file() or image_path.suffix.lower() not in _IMAGE_SUFFIXES:
+            continue
+        if image_path.name.startswith((_PREVIEW_PREFIX, _PANORAMA_PREFIX, "thumb_")):
+            continue
+
+        try:
+            with Image.open(image_path) as source:
+                preview_path = image_path.with_name(_PREVIEW_PREFIX + image_path.name)
+                save_options = {"optimize": True}
+                if preview_path.suffix.lower() in (".jpg", ".jpeg", ".webp"):
+                    save_options["quality"] = 72
+                if not preview_path.exists():
+                    image = ImageOps.exif_transpose(source)
+                    image.thumbnail(_PREVIEW_SIZE, Image.Resampling.LANCZOS)
+                    if preview_path.suffix.lower() in (".jpg", ".jpeg") and image.mode not in (
+                        "RGB",
+                        "L",
+                    ):
+                        image = image.convert("RGB")
+                    image.save(preview_path, **save_options)
+                    count += 1
+
+                if _PANORAMA_IMAGE.search(image_path.name):
+                    panorama_path = image_path.with_name(_PANORAMA_PREFIX + image_path.name)
+                    panorama_width = min(source.width, _PANORAMA_SIZE[0])
+                    rebuild_panorama = not panorama_path.exists()
+                    if not rebuild_panorama:
+                        try:
+                            with Image.open(panorama_path) as existing_panorama:
+                                rebuild_panorama = existing_panorama.width < panorama_width
+                        except (OSError, ValueError):
+                            rebuild_panorama = True
+                    if rebuild_panorama:
+                        panorama = ImageOps.exif_transpose(source)
+                        panorama.thumbnail(_PANORAMA_SIZE, Image.Resampling.LANCZOS)
+                        if panorama_path.suffix.lower() in (".jpg", ".jpeg") and panorama.mode not in (
+                            "RGB",
+                            "L",
+                        ):
+                            panorama = panorama.convert("RGB")
+                        panorama.save(panorama_path, **save_options)
+                        count += 1
+        except (OSError, ValueError) as error:
+            logger.warning("Could not build image preview: path=%s error=%s", image_path, error)
+
+    logger.info("Built %s image previews", count)
+    return count
 
 
 def find_post(site_dir: Path, post_id: str) -> ExistingPost | None:
@@ -672,6 +784,7 @@ def convert_all_html(
     Returns:
         The number of posts built.
     """
+    build_image_previews(site_dir)
     posts_dir = site_dir / "posts"
     md_glob = posts_dir.rglob("*.md")
     all_posts = _populate_post_metadata(md_glob=md_glob, site_dir=site_dir)

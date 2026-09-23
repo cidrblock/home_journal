@@ -1,9 +1,12 @@
 FROM registry.fedoraproject.org/fedora-minimal:42
 
 RUN dnf5 install -y \
+        https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-42.noarch.rpm \
         python3 \
         python3-pip \
-        ffmpeg \
+    && dnf5 swap -y ffmpeg-free ffmpeg \
+    && dnf5 install -y \
+        libavcodec-freeworld \
         file-libs \
     && dnf5 clean all -y
 

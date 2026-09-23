@@ -3,16 +3,20 @@ import argparse
 import hmac
 import logging
 import pathlib
+import time
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from flask import Flask
+from flask import g
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask.wrappers import Response
 from waitress import serve
+from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from .utils import build_thumbnails
 from .utils import convert_all_html
@@ -36,6 +40,67 @@ app.config["MAX_CONTENT_LENGTH"] = DEFAULT_MAX_UPLOAD_SIZE
 
 if TYPE_CHECKING:
     from werkzeug.wrappers import Response as BaseResponse
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_request_entity_too_large(error: RequestEntityTooLarge) -> "BaseResponse | Response":
+    """Log and report requests that exceed the configured upload limit."""
+    logger.warning(
+        "Rejected oversized request: method=%s path=%s content_length=%s limit=%s",
+        request.method,
+        request.path,
+        request.content_length,
+        app.config.get("MAX_CONTENT_LENGTH"),
+    )
+    return Response("Request entity too large", status=error.code or 413)
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error: Exception) -> "BaseResponse | Response":
+    """Log unexpected request failures with their traceback."""
+    if isinstance(error, HTTPException):
+        logger.warning(
+            "HTTP request error: method=%s path=%s status=%s",
+            request.method,
+            request.path,
+            error.code,
+        )
+        return error
+    logger.exception(
+        "Unhandled request error: method=%s path=%s content_length=%s",
+        request.method,
+        request.path,
+        request.content_length,
+    )
+    return Response("Internal server error", status=500)
+
+
+@app.before_request
+def log_request_start() -> None:
+    """Record the start of each request and its content size."""
+    g.request_started_at = time.monotonic()
+    logger.info(
+        "Request started: method=%s path=%s content_length=%s content_type=%s",
+        request.method,
+        request.path,
+        request.content_length,
+        request.content_type,
+    )
+
+
+@app.after_request
+def log_request_end(response: Response) -> Response:
+    """Record the response status and request duration."""
+    started_at = getattr(g, "request_started_at", None)
+    duration = time.monotonic() - started_at if started_at is not None else None
+    logger.info(
+        "Request finished: method=%s path=%s status=%s duration_seconds=%.3f",
+        request.method,
+        request.path,
+        response.status_code,
+        duration if duration is not None else 0.0,
+    )
+    return response
 
 
 @app.route("/config.yml")
@@ -215,6 +280,7 @@ def endpoint_post() -> "BaseResponse | Response":
     Returns:
         A redirect to the new post.
     """
+    logger.info("Starting new post processing")
     allowed_authors = app.config.get("authors") or []
     author = request.form.get("author", "")
     if allowed_authors and author not in allowed_authors:
@@ -223,18 +289,40 @@ def endpoint_post() -> "BaseResponse | Response":
 
     site_dir = app.config["site_dir"]
     posts_dir = app.config["site_dir"] / "posts"
+    logger.info(
+        "Parsed new post form: fields=%s media_count=%s",
+        sorted(request.form.keys()),
+        len(request.files.getlist("media")),
+    )
     post = initialize_new_post(request=request, posts_dir=posts_dir)
+    logger.info(
+        "Initialized new post: post_id=%s media_count=%s tags=%s",
+        post.post_id,
+        len(post.media_file_names),
+        post.tags,
+    )
     post.write_md()
+    logger.info(
+        "Wrote new post markdown: path=%s bytes=%s",
+        post.fs_post_full_md_path,
+        post.fs_post_full_md_path.stat().st_size,
+    )
 
+    logger.info("Converting new post to HTML: post_id=%s", post.post_id)
     _revise_posts, all_posts = convert_all_html(
         site_dir=site_dir,
         post_id=post.post_id,
     )
+    logger.info("Converted new post to HTML: post_id=%s", post.post_id)
+    logger.info("Building thumbnails: post_count=%s", len(all_posts))
     build_thumbnails(all_posts)
+    logger.info("Writing site indices: post_count=%s", len(all_posts))
     write_index(all_posts, site_dir=site_dir)
     write_author_indices(all_posts, site_dir=site_dir)
     write_tag_indices(all_posts, site_dir=site_dir)
-    return redirect(post.fs_post_full_html_path.relative_to(site_dir).as_posix())
+    redirect_path = post.fs_post_full_html_path.relative_to(site_dir).as_posix()
+    logger.info("New post published: post_id=%s redirect=%s", post.post_id, redirect_path)
+    return redirect(redirect_path)
 
 
 def run_server(args: argparse.Namespace) -> None:
@@ -259,4 +347,4 @@ def run_server(args: argparse.Namespace) -> None:
         res = endpoint_convert_all()
         logger.info(res)
 
-    serve(app, host="0.0.0.0", port=args.port, threads=8)
+    serve(app, host="0.0.0.0", port=args.port, threads=8, channel_timeout=1800)
