@@ -1,16 +1,17 @@
 """Helper utilities."""
+
 import logging
 import re
 import shutil
 import subprocess
 import unicodedata
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
 from mmap import mmap
 from pathlib import Path
-from collections.abc import Iterator
 
 import cmarkgfm
 import jinja2
@@ -22,7 +23,6 @@ from flask.wrappers import Request
 from frontmatter import load as frontmatter_load
 from PIL import Image
 from PIL import ImageOps
-
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
@@ -249,7 +249,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
         mimetype = magic.from_file(media_path, mime=True)
         logger.debug("Detected uploaded media type: filename=%s mimetype=%s", filename, mimetype)
         if mimetype.startswith("image/"):
-            eop = b"\x66\x74\x79\x70\x69\x73\x6F\x6D"
+            eop = b"\x66\x74\x79\x70\x69\x73\x6f\x6d"
             with media_path.open("r+b") as image:
                 mem_map = mmap(image.fileno(), 0)
                 file_size = mem_map.size()
@@ -633,7 +633,10 @@ def build_image_previews(site_dir: Path) -> int:
                     if rebuild_panorama:
                         panorama = ImageOps.exif_transpose(source)
                         panorama.thumbnail(_PANORAMA_SIZE, Image.Resampling.LANCZOS)
-                        if panorama_path.suffix.lower() in (".jpg", ".jpeg") and panorama.mode not in (
+                        if panorama_path.suffix.lower() in (
+                            ".jpg",
+                            ".jpeg",
+                        ) and panorama.mode not in (
                             "RGB",
                             "L",
                         ):
