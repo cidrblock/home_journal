@@ -5,8 +5,8 @@ self.addEventListener("install", (e) => {
         "/",
         // '/index.html',
         // '/new.html',
-      ])
-    )
+      ]),
+    ),
   );
 });
 
@@ -25,6 +25,6 @@ self.addEventListener("fetch", (e) => {
       const client = await self.clients.get(e.resultingClientId);
       const files = data.getAll("files");
       client.postMessage({ files });
-    })()
+    })(),
   );
 });
