@@ -213,7 +213,10 @@ article.single-post > .markdown-body > p.progressive-image > img {
   transition: opacity 180ms ease-in;
 }
 
-article.single-post > .markdown-body > p.progressive-image > img.progressive-image-failed {
+article.single-post
+  > .markdown-body
+  > p.progressive-image
+  > img.progressive-image-failed {
   opacity: 0.7;
 }
 

@@ -72,19 +72,21 @@ function submit_delete(event) {
   fetch("/delete", {
     method: "POST",
     body: new FormData(event.target),
-  }).then((res) => {
-    if (res.ok) {
-      window.location.href = "/";
-      return;
-    }
-    if (res.status === 403) {
-      error.textContent = "Wrong passcode";
-      return;
-    }
-    error.textContent = "Could not delete this post";
-  }).catch(() => {
-    error.textContent = "Could not delete this post";
-  });
+  })
+    .then((res) => {
+      if (res.ok) {
+        window.location.href = "/";
+        return;
+      }
+      if (res.status === 403) {
+        error.textContent = "Wrong passcode";
+        return;
+      }
+      error.textContent = "Could not delete this post";
+    })
+    .catch(() => {
+      error.textContent = "Could not delete this post";
+    });
   return false;
 }
 
@@ -97,13 +99,18 @@ function initializePanorama(container, index, viewerElement) {
     return null;
   }
 
-  var verticalView = Math.min(180, (360 * image.naturalHeight) / image.naturalWidth);
+  var verticalView = Math.min(
+    180,
+    (360 * image.naturalHeight) / image.naturalWidth,
+  );
   viewerElement.id = "pannellum-fullscreen-viewer-" + index;
   return pannellum.viewer(viewerElement.id, {
     autoLoad: true,
     haov: 360,
     panorama:
-      image.dataset.panoramaSrc || image.dataset.fullSrc || container.dataset.panorama,
+      image.dataset.panoramaSrc ||
+      image.dataset.fullSrc ||
+      container.dataset.panorama,
     type: "equirectangular",
     vaov: verticalView,
     vOffset: 0,
@@ -219,7 +226,7 @@ function loadProgressiveImages() {
         observer.unobserve(entry.target);
       });
     },
-    { rootMargin: "800px 0px" }
+    { rootMargin: "800px 0px" },
   );
   images.forEach(function (image) {
     observer.observe(image);
@@ -234,9 +241,9 @@ window.addEventListener(
     const lightboxImages = Array.from(document.querySelectorAll("img")).filter(
       function (image) {
         return !image.closest(".pannellum-panorama");
-      }
+      },
     );
     Lightense(lightboxImages);
   },
-  false
+  false,
 );
