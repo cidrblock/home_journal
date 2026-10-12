@@ -99,7 +99,7 @@ window.onload = function (e) {
         status.querySelector("h5").innerText = "Submitting";
         progress_text.innerText = "Starting";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -109,7 +109,7 @@ window.onload = function (e) {
         ui("#progress", percent);
         progress_text.innerText = Math.round(percent) + "%";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -117,7 +117,7 @@ window.onload = function (e) {
       function (event) {
         progress_text.innerText = "Processing";
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -136,7 +136,7 @@ window.onload = function (e) {
           }
         }
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -144,7 +144,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload could not be completed");
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -152,7 +152,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload was canceled");
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -160,7 +160,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload timed out");
       },
-      false
+      false,
     );
 
     xhr.open(this.getAttribute("method"), this.getAttribute("action"), true);
