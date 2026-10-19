@@ -1,4 +1,5 @@
 """Form to post."""
+
 import argparse
 import hmac
 import logging
@@ -30,7 +31,6 @@ from .utils import update_post
 from .utils import write_author_indices
 from .utils import write_index
 from .utils import write_tag_indices
-
 
 app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).parent / "templates"))
 logger = logging.getLogger(__name__)
