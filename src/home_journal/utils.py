@@ -349,7 +349,9 @@ _PREVIEW_PREFIX = "preview_"
 _PANORAMA_PREFIX = "pano_"
 _PREVIEW_SIZE = (640, 640)
 _PANORAMA_SIZE = (8192, 8192)
-_PANORAMA_IMAGE = re.compile(r"\.pano\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE)
+_PANORAMA_IMAGE = re.compile(
+    r"\.(?:pano|photosphere)\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE
+)
 _TRAILING_IMAGE = re.compile(
     r"[ \t]*!\[\]\(media/([^)\s]+)\)[ \t]*(?:\r?\n)?\Z",
 )

@@ -23,6 +23,13 @@ def test_pano_images_render_as_pannellum_viewers() -> None:
     assert '<p class="progressive-image"><img src="media/preview_ordinary.jpg"' in rendered
 
 
+def test_photosphere_images_render_as_pannellum_viewers() -> None:
+    rendered = _render_markdown("![](media/SGCAM_20260923_151453578.PHOTOSPHERE.jpg)")
+
+    assert '<p class="progressive-image pannellum-panorama"' in rendered
+    assert 'data-panorama-src="media/pano_SGCAM_20260923_151453578.PHOTOSPHERE.jpg"' in rendered
+
+
 def test_image_previews_are_created_once(tmp_path: Path) -> None:
     image_dir = tmp_path / "posts" / "post" / "media"
     image_dir.mkdir(parents=True)
@@ -32,6 +39,16 @@ def test_image_previews_are_created_once(tmp_path: Path) -> None:
     assert build_image_previews(tmp_path) == 0
     with Image.open(image_dir / "preview_photo.jpg") as preview:
         assert preview.size == (640, 427)
+
+
+def test_photosphere_preview_includes_bounded_panorama(tmp_path: Path) -> None:
+    image_dir = tmp_path / "posts" / "post" / "media"
+    image_dir.mkdir(parents=True)
+    Image.new("RGB", (10000, 5000), "blue").save(image_dir / "sphere.PHOTOSPHERE.jpg")
+
+    assert build_image_previews(tmp_path) == 2
+    with Image.open(image_dir / "pano_sphere.PHOTOSPHERE.jpg") as panorama:
+        assert panorama.size == (8192, 4096)
 
 
 def test_new_form_exposes_maximum_upload_size() -> None:
