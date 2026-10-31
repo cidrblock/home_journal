@@ -92,6 +92,18 @@
                     {% endfor %}
                   </p>
                 {% endif %}
+                {% if post.location %}
+                  <p>
+                    <i>place</i>
+                    <a
+                      href="{{ post.location.maps_url | e }}"
+                      target="_blank"
+                      rel="noopener"
+                      class="author_link"
+                      >{{ post.location.name | e or "Map" }}</a
+                    >
+                  </p>
+                {% endif %}
               </div>
               <a class="post-cover" href="{{ post.post_url }}" aria-label="{{ post.title }}"></a>
             </article>

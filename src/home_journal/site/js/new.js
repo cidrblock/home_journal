@@ -50,7 +50,128 @@ document.addEventListener("visibilitychange", function () {
   }
 });
 
+function setLocationStatus(message) {
+  var status = document.getElementById("location_status");
+  if (status) {
+    status.textContent = message;
+  }
+}
+
+function findPlaceOption(value) {
+  var list = document.getElementById("places");
+  if (!list) {
+    return null;
+  }
+  for (var i = 0; i < list.options.length; i++) {
+    if (list.options[i].value === value) {
+      return list.options[i];
+    }
+  }
+  return null;
+}
+
+function syncLocationFields() {
+  var name = document.getElementById("location_name");
+  var lat = document.getElementById("location_lat");
+  var lon = document.getElementById("location_lon");
+  var source = document.getElementById("location_source");
+  if (!name || !lat || !lon) {
+    return;
+  }
+  if (!name.value.trim()) {
+    lat.value = "";
+    lon.value = "";
+    if (source) {
+      source.value = "manual";
+    }
+    return;
+  }
+  var option = findPlaceOption(name.value.trim());
+  if (option) {
+    lat.value = option.dataset.lat || "";
+    lon.value = option.dataset.lon || "";
+    if (source) {
+      source.value = "places";
+    }
+    return;
+  }
+  if (source && source.value === "places") {
+    lat.value = "";
+    lon.value = "";
+    source.value = "manual";
+  }
+}
+
+function setupLocation() {
+  var name = document.getElementById("location_name");
+  if (!name) {
+    return;
+  }
+  name.addEventListener("input", syncLocationFields);
+  name.addEventListener("change", syncLocationFields);
+}
+
+function useMyLocation() {
+  var name = document.getElementById("location_name");
+  var lat = document.getElementById("location_lat");
+  var lon = document.getElementById("location_lon");
+  var source = document.getElementById("location_source");
+  if (!lat || !lon) {
+    return;
+  }
+  if (!navigator.geolocation) {
+    setLocationStatus("Location is not available in this browser.");
+    return;
+  }
+  setLocationStatus("Getting your location...");
+  if (
+    source &&
+    name &&
+    ["places", "photo", "browser"].includes(source.value)
+  ) {
+    name.value = "";
+  }
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      lat.value = position.coords.latitude.toFixed(6);
+      lon.value = position.coords.longitude.toFixed(6);
+      if (source) {
+        source.value = "browser";
+      }
+      if (!name || name.value.trim()) {
+        setLocationStatus("Location added.");
+        return;
+      }
+      fetch(
+        "/location/resolve?lat=" +
+          encodeURIComponent(lat.value) +
+          "&lon=" +
+          encodeURIComponent(lon.value)
+      )
+        .then(function (response) {
+          return response.ok ? response.json() : null;
+        })
+        .then(function (data) {
+          if (data && data.name && name && !name.value.trim()) {
+            name.value = data.name;
+          }
+          setLocationStatus("Location added.");
+        })
+        .catch(function () {
+          setLocationStatus("Location added.");
+        });
+    },
+    function () {
+      setLocationStatus(
+        "Could not get your location. Type a place or leave blank."
+      );
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
+}
+
 window.onload = function (e) {
+  setupLocation();
   var author = document.getElementById("author");
   if (window.location.pathname !== "/edit") {
     var saved = localStorage.getItem("author");

@@ -1,6 +1,7 @@
 """Form to post."""
 import argparse
 import hmac
+import json
 import logging
 import pathlib
 import time
@@ -18,6 +19,9 @@ from waitress import serve
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import RequestEntityTooLarge
 
+from .locations import load_places
+from .locations import location_from_form
+from .locations import resolve_coordinates
 from .utils import build_thumbnails
 from .utils import convert_all_html
 from .utils import delete_post
@@ -36,6 +40,10 @@ app = Flask(__name__, static_url_path="", template_folder=str(Path(__file__).par
 logger = logging.getLogger(__name__)
 DEFAULT_MAX_UPLOAD_SIZE = 250 * 1024 * 1024
 app.config["MAX_CONTENT_LENGTH"] = DEFAULT_MAX_UPLOAD_SIZE
+app.config["site_dir"] = Path(".")
+app.config["tags"] = []
+app.config["authors"] = []
+app.config["delete_passcode"] = None
 
 
 if TYPE_CHECKING:
@@ -105,8 +113,10 @@ def log_request_end(response: Response) -> Response:
 
 @app.route("/config.yml")
 @app.route("/config.yaml")
+@app.route("/places.yml")
+@app.route("/places.yaml")
 def endpoint_hide_config() -> Response:
-    """Do not serve the site config file.
+    """Do not serve the site config files.
 
     Returns:
         A 404 response.
@@ -136,8 +146,30 @@ def endpoint_new() -> Response:
             "new.html.j2",
             tags=app.config["tags"],
             authors=app.config["authors"],
+            places=load_places(app.config["site_dir"]),
             max_upload_size=app.config["MAX_CONTENT_LENGTH"],
         )
+    )
+
+
+@app.route("/location/resolve")
+def endpoint_resolve_location() -> "BaseResponse | Response":
+    """Resolve a coordinate to a location name for the post form.
+
+    Returns:
+        A JSON location, or an error response for invalid coordinates.
+    """
+    try:
+        lat = float(request.args["lat"])
+        lon = float(request.args["lon"])
+    except (KeyError, TypeError, ValueError):
+        return Response("Invalid coordinates", status=400)
+    location = resolve_coordinates(app.config["site_dir"], lat, lon)
+    if location is None:
+        return Response("Invalid coordinates", status=400)
+    return Response(
+        json.dumps({"name": location.name, "lat": location.lat, "lon": location.lon}),
+        mimetype="application/json",
     )
 
 
@@ -243,6 +275,7 @@ def endpoint_edit() -> "BaseResponse | Response":
                 post=post,
                 tags=app.config["tags"],
                 authors=app.config["authors"],
+                places=load_places(site_dir),
                 custom_tags=", ".join(custom_tags),
                 edit_content=edit_content,
                 max_upload_size=app.config["MAX_CONTENT_LENGTH"],
@@ -288,18 +321,29 @@ def endpoint_post() -> "BaseResponse | Response":
         return Response("Invalid author", status=400)
 
     site_dir = app.config["site_dir"]
-    posts_dir = app.config["site_dir"] / "posts"
+    posts_dir = site_dir / "posts"
+    location = location_from_form(request, site_dir)
+    if location is None:
+        logger.warning("Rejected post without a location")
+        return Response("Location required", status=400)
     logger.info(
-        "Parsed new post form: fields=%s media_count=%s",
+        "Parsed new post form: fields=%s media_count=%s location=%s",
         sorted(request.form.keys()),
         len(request.files.getlist("media")),
+        location.name,
     )
-    post = initialize_new_post(request=request, posts_dir=posts_dir)
+    post = initialize_new_post(
+        request=request,
+        posts_dir=posts_dir,
+        site_dir=site_dir,
+        location=location,
+    )
     logger.info(
-        "Initialized new post: post_id=%s media_count=%s tags=%s",
+        "Initialized new post: post_id=%s media_count=%s tags=%s location=%s",
         post.post_id,
         len(post.media_file_names),
         post.tags,
+        post.location.name if post.location else None,
     )
     post.write_md()
     logger.info(

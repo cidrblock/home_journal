@@ -13,7 +13,7 @@
 
     <script type="module" src="js/beer.min.js"></script>
     <script type="module" src="js/material-dynamic-colors.min.js"></script>
-    <script src="/js/new.js"></script>
+    <script src="/js/new.js?v=locations-1"></script>
     <script src="/js/site.js"></script>
   </head>
 
@@ -112,6 +112,47 @@
                   <input type="text" name="tags" />
                   <label>Custom tags</label>
                 </div>
+              </div>
+              <div class="s12">
+                <div class="field label border round">
+                  <input
+                    type="text"
+                    name="location_name"
+                    id="location_name"
+                    list="places"
+                    autocomplete="off"
+                    required
+                  />
+                  <label>Location</label>
+                </div>
+                <input type="hidden" name="location_lat" id="location_lat" />
+                <input type="hidden" name="location_lon" id="location_lon" />
+                <input type="hidden" name="location_source" id="location_source" />
+                <datalist id="places">
+                  {% for place in places %}
+                    <option
+                      value="{{ place.name | e }}"
+                      data-lat="{{ place.lat }}"
+                      data-lon="{{ place.lon }}"
+                    ></option>
+                  {% endfor %}
+                </datalist>
+                <div class="row">
+                  <button
+                    type="button"
+                    class="border round small"
+                    onclick="useMyLocation()"
+                  >
+                    <i>my_location</i>
+                    Use my location
+                  </button>
+                </div>
+                <p
+                  id="location_status"
+                  style="font-size: 0.8rem; color: var(--outline);"
+                >
+                  Required. Type a place or use your location.
+                </p>
               </div>
               <div class="s12">
                 <div class="field textarea label border extra round">

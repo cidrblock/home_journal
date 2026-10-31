@@ -13,7 +13,7 @@
 
     <script type="module" src="js/beer.min.js"></script>
     <script type="module" src="js/material-dynamic-colors.min.js"></script>
-    <script src="/js/new.js"></script>
+    <script src="/js/new.js?v=locations-1"></script>
     <script src="/js/site.js"></script>
   </head>
 
@@ -128,6 +128,62 @@
                   <input type="text" name="tags" value="{{ custom_tags }}" />
                   <label>Custom tags</label>
                 </div>
+              </div>
+              <div class="s12">
+                <div class="field label border round">
+                  <input
+                    type="text"
+                    name="location_name"
+                    id="location_name"
+                    list="places"
+                    autocomplete="off"
+                    value="{{ post.location.name | e if post.location else '' }}"
+                  />
+                  <label>Location</label>
+                </div>
+                <input
+                  type="hidden"
+                  name="location_lat"
+                  id="location_lat"
+                  value="{{ post.location.lat if post.location and post.location.lat is not none else '' }}"
+                />
+                <input
+                  type="hidden"
+                  name="location_lon"
+                  id="location_lon"
+                  value="{{ post.location.lon if post.location and post.location.lon is not none else '' }}"
+                />
+                <input
+                  type="hidden"
+                  name="location_source"
+                  id="location_source"
+                  value="{{ post.location.source | e if post.location else '' }}"
+                />
+                <datalist id="places">
+                  {% for place in places %}
+                    <option
+                      value="{{ place.name | e }}"
+                      data-lat="{{ place.lat }}"
+                      data-lon="{{ place.lon }}"
+                    ></option>
+                  {% endfor %}
+                </datalist>
+                <div class="row">
+                  <button
+                    type="button"
+                    class="border round small"
+                    onclick="useMyLocation()"
+                  >
+                    <i>my_location</i>
+                    Use my location
+                  </button>
+                </div>
+                <p
+                  id="location_status"
+                  style="font-size: 0.8rem; color: var(--outline);"
+                >
+                  Leave blank to remove the location.
+                </p>
               </div>
               <div class="s12">
                 <div class="field textarea label border extra round">

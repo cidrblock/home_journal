@@ -94,6 +94,26 @@
               >
             {% endif %}
           </p>
+          {% if post.location %}
+            <p>
+              <i>place</i>
+              <a
+                href="{{ post.location.maps_url | e }}"
+                target="_blank"
+                rel="noopener"
+                class="author_link"
+                >{{ post.location.name | e or "Map" }}</a
+              >
+            </p>
+          {% else %}
+            <p>
+              <a
+                href="/edit?post_id={{ post.post_id | urlencode }}"
+                class="deemphasisze"
+                >add location</a
+              >
+            </p>
+          {% endif %}
           {% if post.tags %}
             <p>
               {% for tag in post.tags %}

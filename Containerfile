@@ -13,8 +13,9 @@ RUN dnf5 install -y \
 WORKDIR /src
 COPY pyproject.toml MANIFEST.in README.md ./
 COPY .config ./.config
+RUN pip3 install --root-user-action=ignore -r .config/requirements.in
 COPY src ./src
-RUN pip3 install --root-user-action=ignore .
+RUN pip3 install --root-user-action=ignore --no-deps .
 
 WORKDIR /mnt/site
 EXPOSE 8000

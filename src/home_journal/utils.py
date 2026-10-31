@@ -5,12 +5,12 @@ import shutil
 import subprocess
 import unicodedata
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
 from mmap import mmap
 from pathlib import Path
-from collections.abc import Iterator
 
 import cmarkgfm
 import jinja2
@@ -22,6 +22,10 @@ from flask.wrappers import Request
 from frontmatter import load as frontmatter_load
 from PIL import Image
 from PIL import ImageOps
+
+from .locations import PostLocation
+from .locations import location_from_form
+from .locations import parse_location
 
 
 jinja_env = jinja2.Environment(
@@ -52,6 +56,8 @@ class BasePost:
 
     # The author of the post
     author: str = ""
+    # The named location of the post
+    location: PostLocation | None = None
     # The next post url
     next: Path | None = None
     # The previous post url
@@ -136,7 +142,7 @@ class NewPost(BasePost):
         Returns:
             The post metadata as a dictionary.
         """
-        include = {
+        include: dict[str, object] = {
             "author": self.author,
             "date": str(self.date),
             "media_file_names": self.media_file_names,
@@ -144,7 +150,9 @@ class NewPost(BasePost):
             "tags": self.tags,
             "title": self.title,
         }
-        return yaml.dump(include, default_flow_style=False)  # type: ignore[no-any-return]
+        if self.location is not None:
+            include["location"] = self.location.as_metadata()
+        return yaml.dump(include, default_flow_style=False)
 
     @property
     def relative_media_path(self) -> Path:
@@ -483,6 +491,7 @@ def _populate_post_metadata(
             author=parsed_post.get("author", ""),
             date=date,
             fs_post_directory=path.parent,
+            location=parse_location(parsed_post.metadata),
             md_content=parsed_post.content,
             post_id=path.parent.name,
             tags=tags + categories,
@@ -754,6 +763,11 @@ def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
         title=request.form.get("title", existing.title),
     )
     _extract_images(post=draft, request=request)
+    form_has_location = "location_name" in request.form or "location_lat" in request.form
+    if form_has_location:
+        draft.location = location_from_form(request, site_dir)
+    else:
+        draft.location = existing.location
     prose = strip_media_appendix(
         request.form.get("content", ""),
         draft.media_file_names,
@@ -803,12 +817,19 @@ def convert_all_html(
     return revise_posts, all_posts
 
 
-def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
+def initialize_new_post(
+    request: Request,
+    posts_dir: Path,
+    site_dir: Path,
+    location: PostLocation | None = None,
+) -> NewPost:
     """Initialize a new post.
 
     Args:
         request: The request.
         posts_dir: The directory of the posts.
+        site_dir: The directory of the site.
+        location: An already-resolved location, if the caller has one.
 
     Returns:
         The new post.
@@ -832,6 +853,8 @@ def initialize_new_post(request: Request, posts_dir: Path) -> NewPost:
     )
 
     _extract_images(post=post, request=request)
+
+    post.location = location if location is not None else location_from_form(request, site_dir)
 
     template = jinja_env.get_template("post.md.j2")
     mimes = _media_groups(post, post.media_file_names)

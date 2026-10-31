@@ -1,0 +1,8 @@
+City data in cities1000.tsv.gz comes from GeoNames:
+https://download.geonames.org/export/dump/cities1000.zip
+
+GeoNames data is licensed under the Creative Commons Attribution 4.0
+License: https://creativecommons.org/licenses/by/4.0/
+
+Generated 2026-10-31 with tools/build_city_data.py, excluding
+neighbourhood, abandoned, historical, and destroyed place features.

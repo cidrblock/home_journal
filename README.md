@@ -54,6 +54,8 @@ I had an old wordpress blog that I converted to markdown files and needed a way 
 - Passcode-protected post delete
 - Passcode-protected post edit
 - Author dropdown from site config
+- Required post locations with a Google Maps link
+- Offline city names from bundled GeoNames data (no geocoding API)
 
 ## Site config
 
@@ -68,6 +70,18 @@ authors:
 ```
 
 `--tags` on the command line overrides `tags` from this file. `authors` is the fixed list for the new-post author dropdown.
+
+Optional `places.yml` in the site directory names the places you care about. A coordinate inside a place's radius uses that name instead of the nearest city.
+
+```
+places:
+  - name: Thousand Trails - Bend
+    lat: 44.0512
+    lon: -121.3087
+    radius_km: 5
+```
+
+Like `config.yml`, `places.yml` is not served over HTTP.
 
 ## Future enhancements
 
@@ -89,6 +103,8 @@ home-journal --init --site-directory /home/user/home_journal
 
 Uploads accept multiple files in one post up to 250 MiB combined by default. Use
 `--max-upload-size` to set a different limit in bytes.
+
+A location is required when creating a new post. Posts without one show an "add location" link that opens the edit form.
 
 Each time home-journal is run with the `--init` flag it will copy the css, js, and icons from the source tree into the site. If these files have been customized in the site directory, those changes will be overwritten if the `--init` flag is used again.
 
@@ -145,3 +161,4 @@ Please see the individual files in the root of the repo for the most recent exam
 - Handy frontmatter extractor https://github.com/eyeseast/python-frontmatter
 - Easy wordpress xml to md https://github.com/lonekorean/wordpress-export-to-markdown
 - Sample photos https://unsplash.com/
+- Offline city data https://www.geonames.org/ (CC BY 4.0)
