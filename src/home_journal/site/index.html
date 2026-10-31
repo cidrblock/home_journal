@@ -10,10 +10,10 @@
     <meta name="google" content="notranslate" />
     <title>everything</title>
     <link href="/css/beer.min.css" rel="stylesheet" />
-    <link href="/css/site.css" rel="stylesheet" />
+    <link href="/css/site.css?v=instant-paint-1" rel="stylesheet" />
     <script type="module" src="/js/beer.min.js"></script>
     <script type="module" src="/js/material-dynamic-colors.min.js"></script>
-    <script type="text/javascript" src="/js/site.js"></script>
+    <script type="text/javascript" src="/js/site.js?v=instant-paint-1"></script>
     <link rel="manifest" href="/manifest.webmanifest" />
     <script>
       if ("serviceWorker" in navigator) {
@@ -24,6 +24,13 @@
   </head>
 
   <body class="dark">
+    <script>
+      try {
+        if (localStorage.getItem("mode") === "light") {
+          document.body.className = "light";
+        }
+      } catch (e) {}
+    </script>
     <nav class="bottom no-margin">
       <a href="" onclick="changeMode()">
         <i>light_mode</i>

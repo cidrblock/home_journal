@@ -4,10 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     darkMode();
   }
-  var element = document.body;
-  if ((element.style.visibility = "hidden")) {
-    element.style.visibility = "visible";
-  }
 });
 
 function lightMode() {

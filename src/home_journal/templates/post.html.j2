@@ -5,17 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/css/github-markdown.css" />
     <link href="/css/beer.min.css" rel="stylesheet" />
-    <link href="/css/pannellum.css" rel="stylesheet" />
-    <link href="/css/site.css?v=progressive-images-7" rel="stylesheet" />
+    {% if "pannellum-panorama" in content %}
+      <link href="/css/pannellum.css" rel="stylesheet" />
+    {% endif %}
+    <link href="/css/site.css?v=instant-paint-1" rel="stylesheet" />
     <script src="/js/lightense.min.js"></script>
-    <script src="/js/pannellum.js"></script>
+    {% if "pannellum-panorama" in content %}
+      <script src="/js/pannellum.js"></script>
+    {% endif %}
     <script type="module" src="/js/beer.min.js"></script>
     <script type="module" src="/js/material-dynamic-colors.min.js"></script>
     <script src="/js/post.js?v=progressive-images-7"></script>
-    <script src="/js/site.js"></script>
+    <script src="/js/site.js?v=instant-paint-1"></script>
   </head>
 
   <body class="dark">
+    <script>
+      try {
+        if (localStorage.getItem("mode") === "light") {
+          document.body.className = "light";
+        }
+      } catch (e) {}
+    </script>
     <nav class="bottom no-margin">
       <a href="/{{ post.previous }}" id="previous">
         <i>arrow_back</i>
