@@ -577,13 +577,13 @@ def _render_markdown(content: str) -> str:
             f'src="{_preview_media_path(match.group(1))}" '
             f'data-full-src="{match.group(1)}" '
             f'data-panorama-src="{_panorama_media_path(match.group(1))}" '
-            f'alt="{match.group(2)}" loading="eager" '
+            f'alt="{match.group(2)}" loading="lazy" '
             f'decoding="async" /></p>'
             if _PANORAMA_IMAGE.search(match.group(1))
             else (
                 f'<p class="progressive-image"><img '
                 f'src="{_preview_media_path(match.group(1))}" '
-                f'data-full-src="{match.group(1)}" alt="{match.group(2)}" loading="eager" '
+                f'data-full-src="{match.group(1)}" alt="{match.group(2)}" loading="lazy" '
                 f'decoding="async" /></p>'
             )
         ),

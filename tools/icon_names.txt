@@ -1,0 +1,14 @@
+add
+arrow_back
+arrow_drop_down
+arrow_forward
+attach_file
+delete
+edit
+home
+light_mode
+my_location
+person
+place
+search
+tag
