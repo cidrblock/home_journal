@@ -3,6 +3,11 @@ var activePanorama = null;
 
 function checkKey(e) {
   e = e || window.event;
+  // PhotoSwipe owns the keyboard while it is open; without this, the arrow
+  // keys would also change posts underneath the gallery.
+  if (window.pswp) {
+    return;
+  }
   var modal = document.getElementById("delete-dialog");
   var modal_open = modal && modal.classList.contains("active");
   const tag = (e.target && e.target.tagName) || "";
@@ -206,57 +211,20 @@ function hydrateMedia() {
   });
 }
 
-function preloadFullImage(image) {
-  // The preview stays on screen, including while the lightbox is open, until the
-  // original has fully loaded. A slow link therefore never shows an empty frame,
-  // and nothing is fetched until the image is actually opened.
-  var fullSrc = image.dataset.fullSrc;
-  if (
-    !fullSrc ||
-    image.closest(".pannellum-panorama") ||
-    image.dataset.fullLoading ||
-    image.dataset.fullLoaded
-  ) {
+function initializeGallery() {
+  if (!window.PhotoSwipeLightbox || !window.PhotoSwipe) {
     return;
   }
-
-  image.dataset.fullLoading = "true";
-  var fullImage = new Image();
-  fullImage.decoding = "async";
-  fullImage.onload = function () {
-    image.src = fullSrc;
-    image.dataset.fullLoaded = "true";
-    delete image.dataset.fullLoading;
-    image.classList.add("progressive-image-loaded");
-  };
-  fullImage.onerror = function () {
-    delete image.dataset.fullLoading;
-    image.classList.add("progressive-image-failed");
-  };
-  fullImage.src = fullSrc;
-}
-
-function initializeImageLightbox() {
-  // Registered before Lightense binds its own click handler. It starts the
-  // original download without touching src, so Lightense opens the cached
-  // preview instantly; the zoomed image sharpens when the original arrives.
-  var images = Array.from(document.querySelectorAll("img[data-full-src]")).filter(
-    function (image) {
-      return !image.closest(".pannellum-panorama");
-    }
-  );
-  images.forEach(function (image) {
-    image.addEventListener(
-      "click",
-      function (event) {
-        if (event) {
-          event.preventDefault();
-        }
-        preloadFullImage(image);
-      },
-      false
-    );
+  if (!document.querySelector("a.pswp-item")) {
+    return;
+  }
+  var lightbox = new PhotoSwipeLightbox({
+    gallery: ".markdown-body",
+    children: "a.pswp-item",
+    pswpModule: PhotoSwipe,
+    bgOpacity: 1,
   });
+  lightbox.init();
 }
 
 function startMedia() {
@@ -266,17 +234,11 @@ function startMedia() {
   startMedia.done = true;
   initializePanoramas();
   hydrateMedia();
-  initializeImageLightbox();
-  const lightboxImages = Array.from(document.querySelectorAll("img")).filter(
-    function (image) {
-      return !image.closest(".pannellum-panorama");
-    }
-  );
-  Lightense(lightboxImages);
 }
 
-// Start once the document has painted: images must never compete with the post
-// itself, and a stalled subresource must not hold them back forever.
+// PhotoSwipe only binds click handlers, so it can start with the document. The
+// posters and panoramas wait for paint, as before.
+window.addEventListener("DOMContentLoaded", initializeGallery, false);
 window.addEventListener("load", startMedia, false);
 window.addEventListener("DOMContentLoaded", function () {
   setTimeout(startMedia, 1000);

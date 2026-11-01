@@ -8,14 +8,20 @@
     {% if "pannellum-panorama" in content %}
       <link href="/css/pannellum.css" rel="stylesheet" />
     {% endif %}
-    <link href="/css/site.css?v=post-image-1" rel="stylesheet" />
-    <script src="/js/lightense.min.js"></script>
+    <link href="/css/site.css?v=gallery-2" rel="stylesheet" />
+    {% if "pswp-item" in content %}
+      <link href="/css/photoswipe.css" rel="stylesheet" />
+    {% endif %}
     {% if "pannellum-panorama" in content %}
       <script src="/js/pannellum.js"></script>
     {% endif %}
     <script type="module" src="/js/beer.min.js"></script>
     <script type="module" src="/js/material-dynamic-colors.min.js"></script>
-    <script src="/js/post.js?v=full-on-open-1"></script>
+    {% if "pswp-item" in content %}
+      <script defer src="/js/photoswipe.umd.min.js"></script>
+      <script defer src="/js/photoswipe-lightbox.umd.min.js"></script>
+    {% endif %}
+    <script src="/js/post.js?v=photoswipe-3"></script>
     <script src="/js/site.js?v=instant-paint-1"></script>
   </head>
 

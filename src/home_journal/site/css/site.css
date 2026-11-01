@@ -107,6 +107,11 @@ img {
   border-radius: 0.75rem;
 }
 
+/* The gallery draws its own image; the rounded corners are for inline photos. */
+.pswp__img {
+  border-radius: 0;
+}
+
 @media screen and (max-width: 767px) {
   .main {
     gap: 0vw;
@@ -196,9 +201,8 @@ article.single-post > .markdown-body > p:has(img) {
   text-align: center;
 }
 
-/* Lightense moves the img into .lightense-wrap, which is outside the markdown
-   body. Keep the sizing on the image itself so the box does not fall back to the
-   HTML width/height attributes and stretch the photo. */
+/* The gallery also sizes the image. Keep the rule on the image itself so it does
+   not depend on being a direct child of the markdown body. */
 article.single-post > .markdown-body > p > img,
 .post-image {
   object-fit: contain;
@@ -268,10 +272,6 @@ article.single-post > .markdown-body > .video > video {
   max-height: 80dvh;
   max-width: 100%;
   border-radius: 0.75rem;
-}
-
-.lightense-backdrop {
-  background-color: var(--background) !important;
 }
 
 .author_link {

@@ -107,11 +107,14 @@ def test_posts_ship_previews_and_defer_the_original(tmp_path: Path) -> None:
 
     html = _render_markdown("![](media/a.jpg)", media_dir=media)
 
+    assert '<a class="pswp-item" href="media/a.jpg"' in html
+    assert 'data-pswp-width="640"' in html
+    assert 'data-pswp-height="480"' in html
     assert '<img class="post-image" src="media/preview_a.jpg"' in html
-    assert 'data-full-src="media/a.jpg"' in html
     assert '<img class="post-image" src="media/a.jpg"' not in html
     assert 'loading="lazy"' in html
     assert "data-src=" not in html
+    assert "data-full-src" not in html
 
 
 def test_linked_images_show_the_preview_too(tmp_path: Path) -> None:
@@ -121,15 +124,63 @@ def test_linked_images_show_the_preview_too(tmp_path: Path) -> None:
 
     html = _render_markdown("[![](media/b.jpg)](media/b.jpg)", media_dir=media)
 
-    assert '<a href="media/b.jpg">' in html
+    assert '<a class="pswp-item" href="media/b.jpg"' in html
     assert '<img class="post-image" src="media/preview_b.jpg"' in html
-    assert 'data-full-src="media/b.jpg"' in html
     assert '<img class="post-image" src="media/b.jpg"' not in html
 
 
+def test_gallery_uses_the_original_size(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (1200, 800)).save(media / "photo.jpg")
+    Image.new("RGB", (480, 320)).save(media / "preview_photo.jpg")
+
+    html = _render_markdown("![](media/photo.jpg)", media_dir=media)
+
+    assert 'data-pswp-width="1200"' in html
+    assert 'data-pswp-height="800"' in html
+
+
+def test_gallery_dimensions_follow_exif_orientation(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    image = Image.new("RGB", (1200, 800))
+    exif = image.getexif()
+    exif[274] = 6
+    image.save(media / "photo.jpg", exif=exif)
+    Image.new("RGB", (400, 600)).save(media / "preview_photo.jpg")
+
+    html = _render_markdown("![](media/photo.jpg)", media_dir=media)
+
+    assert 'data-pswp-width="800"' in html
+    assert 'data-pswp-height="1200"' in html
+
+
+def test_photoswipe_is_only_loaded_for_gallery_posts() -> None:
+    template = jinja_env.get_template("post.html.j2")
+
+    plain = template.render(
+        post=_post(),
+        content='<p class="progressive-image pannellum-panorama"><img src="media/a.jpg" /></p>',
+    )
+    assert "/js/photoswipe.umd.min.js" not in plain
+    assert "/js/photoswipe-lightbox.umd.min.js" not in plain
+    assert "/css/photoswipe.css" not in plain
+    assert "lightense" not in plain
+
+    gallery = template.render(
+        post=_post(),
+        content='<a class="pswp-item" href="media/a.jpg"><img src="media/preview_a.jpg" /></a>',
+    )
+    assert "/js/photoswipe.umd.min.js" in gallery
+    assert "/js/photoswipe-lightbox.umd.min.js" in gallery
+    assert "/css/photoswipe.css" in gallery
+    assert "lightense" not in gallery
+
+
 def test_post_images_survive_being_moved_out_of_the_markdown_body() -> None:
-    # Lightense reparents the img into .lightense-wrap; the sizing must live on
-    # the image itself or it falls back to the HTML width/height attributes.
+    # The gallery also sizes the image; the rule must live on the image itself so
+    # it does not depend on being a direct child of the markdown body.
     css = (
         Path(__file__).parent.parent
         / "src"
@@ -152,4 +203,6 @@ def test_post_script_does_not_fetch_originals_while_scrolling() -> None:
 
     assert "pointerdown" not in script
     assert "loadProgressiveImages" not in script
-    assert "preloadFullImage" in script
+    assert "preloadFullImage" not in script
+    assert "PhotoSwipeLightbox" in script
+    assert "window.pswp" in script

@@ -598,10 +598,7 @@ def _render_markdown(content: str, media_dir: Path | None = None) -> str:
     )
     # Older posts wrap each image in a link to the full file.
     content = _LINKED_IMAGE.sub(
-        lambda match: (
-            f'<p><a href="{match.group(1)}">'
-            f"{_progressive_image_tag(match.group(1), match.group(2), media_dir)}</a></p>"
-        ),
+        lambda match: _progressive_paragraph(match.group(1), match.group(2), media_dir),
         content,
     )
     # Anything left, e.g. several images sharing one paragraph.
@@ -613,11 +610,11 @@ def _render_markdown(content: str, media_dir: Path | None = None) -> str:
 
 
 def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) -> str:
-    """Return an image tag that shows the preview and defers the original.
+    """Return a preview image, wrapped in a PhotoSwipe gallery link.
 
     The preview is the real source, lazily loaded by the browser. The original is
-    only referenced by ``data-full-src`` so it is not fetched until the image is
-    opened, which keeps scrolling over a post cheap even on a weak link.
+    the link target, so it is only fetched when PhotoSwipe opens the slide.
+    Panorama images stay out of the gallery and open in Pannellum instead.
 
     Args:
         media_path: The media path of the original image.
@@ -625,20 +622,24 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
         media_dir: The post media directory, or None when it is unknown.
 
     Returns:
-        The img element.
+        The img element, or a link holding it.
     """
     if _PANORAMA_IMAGE.search(media_path):
         return (
             f'<img class="post-image" src="{_preview_media_path(media_path)}" '
             f"{_preview_size_attributes(media_dir, media_path)}"
-            f'data-full-src="{media_path}" '
             f'data-panorama-src="{_panorama_media_path(media_path)}" '
             f'alt="{alt}" loading="lazy" decoding="async" />'
         )
-    return (
+    image = (
         f'<img class="post-image" src="{_preview_media_path(media_path)}" '
         f"{_preview_size_attributes(media_dir, media_path)}"
-        f'data-full-src="{media_path}" alt="{alt}" loading="lazy" decoding="async" />'
+        f'alt="{alt}" loading="lazy" decoding="async" />'
+    )
+    return (
+        f'<a class="pswp-item" href="{media_path}" '
+        f"{_original_size_attributes(media_dir, media_path)}>"
+        f"{image}</a>"
     )
 
 
@@ -684,6 +685,33 @@ def _preview_size_attributes(media_dir: Path | None, media_path: str) -> str:
     except (OSError, ValueError):
         return ""
     return f'width="{width}" height="{height}" '
+
+
+def _original_size_attributes(media_dir: Path | None, media_path: str) -> str:
+    """Return the PhotoSwipe width and height of the original image.
+
+    PhotoSwipe needs the real dimensions to lay out and zoom a slide. EXIF
+    orientation is applied so a rotated phone photo reports the size it is shown
+    at, not the stored pixel grid.
+
+    Args:
+        media_dir: The post media directory, or None when it is unknown.
+        media_path: The media path of the original image.
+
+    Returns:
+        The data-pswp-width and data-pswp-height attributes, empty when unknown.
+    """
+    if media_dir is None:
+        return ""
+    preview = media_dir / Path(_preview_media_path(media_path)).name
+    for candidate in (media_dir / Path(media_path).name, preview):
+        try:
+            with Image.open(candidate) as image:
+                width, height = ImageOps.exif_transpose(image).size
+        except (OSError, ValueError):
+            continue
+        return f'data-pswp-width="{width}" data-pswp-height="{height}" '
+    return ""
 
 
 def _video_poster(media_dir: Path | None, source: str) -> str | None:
