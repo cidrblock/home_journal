@@ -175,25 +175,6 @@ function initializePanoramas() {
   });
 }
 
-function slowConnection() {
-  var connection = navigator.connection || navigator.mozConnection || {};
-  if (connection.saveData) {
-    return true;
-  }
-  if (/2g|3g/.test(connection.effectiveType || "")) {
-    return true;
-  }
-  return typeof connection.downlink === "number" && connection.downlink > 0 && connection.downlink < 1.5;
-}
-
-function hydrateImage(image) {
-  if (!image.dataset.src) {
-    return;
-  }
-  image.src = image.dataset.src;
-  delete image.dataset.src;
-}
-
 function hydratePoster(video) {
   if (!video.dataset.poster) {
     return;
@@ -203,18 +184,9 @@ function hydratePoster(video) {
 }
 
 function hydrateMedia() {
-  var elements = Array.from(
-    document.querySelectorAll("img[data-src], video[data-poster]")
-  );
-  var reveal = function (element) {
-    if (element.tagName === "VIDEO") {
-      hydratePoster(element);
-    } else {
-      hydrateImage(element);
-    }
-  };
+  var videos = Array.from(document.querySelectorAll("video[data-poster]"));
   if (!("IntersectionObserver" in window)) {
-    elements.forEach(reveal);
+    videos.forEach(hydratePoster);
     return;
   }
   var observer = new IntersectionObserver(
@@ -223,18 +195,21 @@ function hydrateMedia() {
         if (!entry.isIntersecting) {
           return;
         }
-        reveal(entry.target);
+        hydratePoster(entry.target);
         observer.unobserve(entry.target);
       });
     },
     { rootMargin: "0px" }
   );
-  elements.forEach(function (element) {
-    observer.observe(element);
+  videos.forEach(function (video) {
+    observer.observe(video);
   });
 }
 
-function loadFullImage(image) {
+function preloadFullImage(image) {
+  // The preview stays on screen, including while the lightbox is open, until the
+  // original has fully loaded. A slow link therefore never shows an empty frame,
+  // and nothing is fetched until the image is actually opened.
   var fullSrc = image.dataset.fullSrc;
   if (
     !fullSrc ||
@@ -261,67 +236,25 @@ function loadFullImage(image) {
   fullImage.src = fullSrc;
 }
 
-function loadProgressiveImages() {
-  // Phones read the 640px preview, which already covers their screen; pulling a
-  // multi-megabyte original while scrolling is what saturates a weak link. Tapping
-  // an image still upgrades it to the full size (see upgradeOnTap), and a slow
-  // connection keeps previews even on a wide screen.
-  if (slowConnection() || !window.matchMedia("(min-width: 768px)").matches) {
-    return;
-  }
-  var images = Array.from(document.querySelectorAll("img[data-full-src]"));
-  if (!("IntersectionObserver" in window)) {
-    images.forEach(loadFullImage);
-    return;
-  }
-
-  var observer = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) {
-          return;
-        }
-        var image = entry.target;
-        observer.unobserve(image);
-        if (image.dataset.src) {
-          hydrateImage(image);
-        }
-        if (!image.complete) {
-          var load = function () {
-            loadFullImage(image);
-          };
-          image.addEventListener("load", load, { once: true });
-          image.addEventListener("error", load, { once: true });
-          return;
-        }
-        loadFullImage(image);
-      });
-    },
-    { rootMargin: "0px" }
+function initializeImageLightbox() {
+  // Registered before Lightense binds its own click handler. It starts the
+  // original download without touching src, so Lightense opens the cached
+  // preview instantly; the zoomed image sharpens when the original arrives.
+  var images = Array.from(document.querySelectorAll("img[data-full-src]")).filter(
+    function (image) {
+      return !image.closest(".pannellum-panorama");
+    }
   );
   images.forEach(function (image) {
-    observer.observe(image);
-  });
-}
-
-function upgradeOnTap(image) {
-  var fullSrc = image.dataset.fullSrc;
-  if (!fullSrc || image.dataset.fullLoaded || image.dataset.fullLoading) {
-    return;
-  }
-  image.dataset.fullLoaded = "true";
-  image.src = fullSrc;
-}
-
-function initializeUpgradeOnTap() {
-  var images = Array.from(document.querySelectorAll("img[data-full-src]"));
-  images.forEach(function (image) {
     image.addEventListener(
-      "pointerdown",
-      function () {
-        upgradeOnTap(image);
+      "click",
+      function (event) {
+        if (event) {
+          event.preventDefault();
+        }
+        preloadFullImage(image);
       },
-      { passive: true }
+      false
     );
   });
 }
@@ -333,8 +266,7 @@ function startMedia() {
   startMedia.done = true;
   initializePanoramas();
   hydrateMedia();
-  initializeUpgradeOnTap();
-  loadProgressiveImages();
+  initializeImageLightbox();
   const lightboxImages = Array.from(document.querySelectorAll("img")).filter(
     function (image) {
       return !image.closest(".pannellum-panorama");

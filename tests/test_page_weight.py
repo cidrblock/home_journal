@@ -1,6 +1,7 @@
 """Guards what a page is allowed to pull down before it is useful."""
 
 from datetime import datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 from home_journal.utils import _render_markdown
@@ -78,14 +79,14 @@ def test_videos_are_left_to_load_on_tap(tmp_path: Path) -> None:
     assert "playsinline" in html
 
 
-def test_video_without_a_still_fetches_only_metadata(tmp_path: Path) -> None:
+def test_video_without_a_still_still_fetches_nothing(tmp_path: Path) -> None:
     html = _render_markdown(
         '<div class="video"><video controls>'
         '<source src="media/clip.mp4" type="video/mp4" /></video></div>',
         media_dir=tmp_path,
     )
 
-    assert 'preload="metadata"' in html
+    assert 'preload="none"' in html
     assert "data-poster=" not in html
 
 
@@ -99,18 +100,21 @@ def test_previews_reserve_their_box(tmp_path: Path) -> None:
     assert 'width="640" height="480"' in html
 
 
-def test_previews_fetch_nothing_until_the_post_is_on_screen(tmp_path: Path) -> None:
+def test_posts_ship_previews_and_defer_the_original(tmp_path: Path) -> None:
     media = tmp_path / "media"
     media.mkdir()
     Image.new("RGB", (640, 480)).save(media / "preview_a.jpg")
 
     html = _render_markdown("![](media/a.jpg)", media_dir=media)
 
-    assert 'data-src="media/preview_a.jpg"' in html
-    assert "<img src=" not in html
+    assert '<img src="media/preview_a.jpg"' in html
+    assert 'data-full-src="media/a.jpg"' in html
+    assert '<img src="media/a.jpg"' not in html
+    assert 'loading="lazy"' in html
+    assert "data-src=" not in html
 
 
-def test_linked_images_are_deferred_too(tmp_path: Path) -> None:
+def test_linked_images_show_the_preview_too(tmp_path: Path) -> None:
     media = tmp_path / "media"
     media.mkdir()
     Image.new("RGB", (320, 240)).save(media / "preview_b.jpg")
@@ -118,5 +122,16 @@ def test_linked_images_are_deferred_too(tmp_path: Path) -> None:
     html = _render_markdown("[![](media/b.jpg)](media/b.jpg)", media_dir=media)
 
     assert '<a href="media/b.jpg">' in html
-    assert 'data-src="media/preview_b.jpg"' in html
-    assert "<img src=" not in html
+    assert '<img src="media/preview_b.jpg"' in html
+    assert 'data-full-src="media/b.jpg"' in html
+    assert '<img src="media/b.jpg"' not in html
+
+
+def test_post_script_does_not_fetch_originals_while_scrolling() -> None:
+    script = (
+        Path(__file__).parent.parent / "src" / "home_journal" / "site" / "js" / "post.js"
+    ).read_text()
+
+    assert "pointerdown" not in script
+    assert "loadProgressiveImages" not in script
+    assert "preloadFullImage" in script

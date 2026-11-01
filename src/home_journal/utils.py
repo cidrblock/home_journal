@@ -613,7 +613,11 @@ def _render_markdown(content: str, media_dir: Path | None = None) -> str:
 
 
 def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) -> str:
-    """Return an image tag that fetches only once the post is on screen.
+    """Return an image tag that shows the preview and defers the original.
+
+    The preview is the real source, lazily loaded by the browser. The original is
+    only referenced by ``data-full-src`` so it is not fetched until the image is
+    opened, which keeps scrolling over a post cheap even on a weak link.
 
     Args:
         media_path: The media path of the original image.
@@ -625,14 +629,14 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
     """
     if _PANORAMA_IMAGE.search(media_path):
         return (
-            f'<img data-src="{_preview_media_path(media_path)}" '
+            f'<img src="{_preview_media_path(media_path)}" '
             f"{_preview_size_attributes(media_dir, media_path)}"
             f'data-full-src="{media_path}" '
             f'data-panorama-src="{_panorama_media_path(media_path)}" '
             f'alt="{alt}" loading="lazy" decoding="async" />'
         )
     return (
-        f'<img data-src="{_preview_media_path(media_path)}" '
+        f'<img src="{_preview_media_path(media_path)}" '
         f"{_preview_size_attributes(media_dir, media_path)}"
         f'data-full-src="{media_path}" alt="{alt}" loading="lazy" decoding="async" />'
     )
@@ -746,9 +750,9 @@ def _play_on_tap(match: re.Match[str], media_dir: Path | None) -> str:
     poster = _video_poster(media_dir, source.group("source")) if source else None
     if poster and not re.search(r"\bposter=", attributes, re.IGNORECASE):
         attributes += f' data-poster="{poster}"'
-    elif not poster:
-        # No still to show: let the browser fetch the first frame, not the file.
-        attributes = attributes.replace('preload="none"', 'preload="metadata"')
+    # No still to show: leave preload="none". preload="metadata" sounds cheap but
+    # Chrome fetches these MP4s end to end to find the moov atom, so a scroll would
+    # pull tens of megabytes before anything is played.
     return f"<video{attributes}>{body}</video>"
 
 
