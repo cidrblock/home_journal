@@ -112,38 +112,20 @@ img {
   border-radius: 0;
 }
 
-/* lightGallery's bundled icon font lacks some glyphs in the size we ship, and
-   another button rule hides ::after icons (opacity: 0). Use plain text glyphs on
-   ::before, which the next arrow already proves works. */
-.lg-outer .lg-close::after,
-.lg-outer .lg-prev::after {
-  content: none !important;
-}
-
-.lg-outer .lg-close::before {
-  content: "\00d7";
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 28px;
-  line-height: 47px;
-  opacity: 1;
+/* Beer CSS turns every <button> into a ripple with an absolutely positioned
+   ::after that covers lightGallery's own icon glyphs. Neutralize the ripple for
+   the gallery's icon buttons and keep the library's centered glyphs. */
+.lg-outer button.lg-icon::after {
   position: static;
-}
-
-.lg-outer .lg-prev::before {
-  content: "\2039";
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 34px;
-  line-height: 40px;
+  top: auto;
+  left: auto;
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  z-index: auto;
   opacity: 1;
-  position: static;
-}
-
-.lg-outer .lg-next::before {
-  content: "\203a";
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 34px;
-  line-height: 40px;
-  opacity: 1;
+  transition: none;
 }
 
 .lg-outer .lg-close,
@@ -155,6 +137,11 @@ img {
 @media screen and (max-width: 767px) {
   .main {
     gap: 0vw;
+  }
+  /* Touch devices swipe; the arrows just get in the way. */
+  .lg-outer .lg-prev,
+  .lg-outer .lg-next {
+    display: none !important;
   }
 }
 

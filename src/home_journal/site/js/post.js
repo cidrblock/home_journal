@@ -229,7 +229,7 @@ function initializeGallery() {
     showBarsAfter: 0,
     hideBarsDelay: 0,
     mobileSettings: {
-      controls: true,
+      controls: false,
       showCloseIcon: true,
       download: false,
       showGestureButtons: false,
