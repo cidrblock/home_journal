@@ -112,6 +112,46 @@ img {
   border-radius: 0;
 }
 
+/* lightGallery's bundled icon font lacks some glyphs in the size we ship, and
+   another button rule hides ::after icons (opacity: 0). Use plain text glyphs on
+   ::before, which the next arrow already proves works. */
+.lg-outer .lg-close::after,
+.lg-outer .lg-prev::after {
+  content: none !important;
+}
+
+.lg-outer .lg-close::before {
+  content: "\00d7";
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 28px;
+  line-height: 47px;
+  opacity: 1;
+  position: static;
+}
+
+.lg-outer .lg-prev::before {
+  content: "\2039";
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 34px;
+  line-height: 40px;
+  opacity: 1;
+  position: static;
+}
+
+.lg-outer .lg-next::before {
+  content: "\203a";
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 34px;
+  line-height: 40px;
+  opacity: 1;
+}
+
+.lg-outer .lg-close,
+.lg-outer .lg-prev,
+.lg-outer .lg-next {
+  color: #fff;
+}
+
 @media screen and (max-width: 767px) {
   .main {
     gap: 0vw;

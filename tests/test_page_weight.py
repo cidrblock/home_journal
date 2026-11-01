@@ -188,6 +188,29 @@ def test_motion_photo_clips_stay_inline(tmp_path: Path) -> None:
     assert 'data-poster="media/preview_ex_clip.jpg"' in html
 
 
+def test_motion_photo_still_becomes_a_video_slide(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (1200, 900)).save(media / "ex_clip.jpg")
+    Image.new("RGB", (640, 480)).save(media / "preview_ex_clip.jpg")
+    (media / "ex_h264_clip.mp4").write_bytes(b"")
+    html = _render_markdown(
+        "![](media/ex_clip.jpg)\n\n"
+        '<div class="video"><video controls>'
+        '<source src="media/ex_h264_clip.mp4" type="video/mp4" /></video></div>',
+        media_dir=media,
+        gallery="lightgallery",
+    )
+
+    assert 'class="lg-item lg-video-item"' in html
+    assert 'href="media/ex_h264_clip.mp4"' in html
+    assert 'data-poster="media/preview_ex_clip.jpg"' in html
+    assert 'src="media/preview_ex_clip.jpg"' in html
+    assert 'data-lg-size="1200-900"' in html
+    assert "<video" not in html
+    assert '<div class="video"></div>' not in html
+
+
 def test_lightgallery_is_only_loaded_for_gallery_posts() -> None:
     template = jinja_env.get_template("post.html.j2")
 
@@ -245,6 +268,8 @@ def test_post_script_does_not_fetch_originals_while_scrolling() -> None:
     assert "preloadFullImage" not in script
     assert "lightGallery(" in script
     assert ".lg-outer" in script
+    assert "showBarsAfter: 0" in script
+    assert "mobileSettings" in script
     assert "PhotoSwipe" not in script
 
 

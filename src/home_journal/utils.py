@@ -599,9 +599,23 @@ def _render_markdown(
         content,
         options=cmarkgfmOptions.CMARK_OPT_UNSAFE,
     )
+    # Pair a motion photo's still (ex_<base>.jpg) with its clip
+    # (ex_h264_<base>.mp4) so the gallery gets one video slide whose poster is
+    # the still, instead of a still slide plus an inline clip nobody scrolls to.
+    motion_clips: dict[str, str] = {}
+    suppressed_clips: set[str] = set()
+    if gallery == "lightgallery" and media_dir is not None:
+        for clip in media_dir.glob(f"{_VIDEO_PREFIX}*.mp4"):
+            base = clip.name[len(_VIDEO_PREFIX) : -len(".mp4")]
+            for suffix in _IMAGE_SUFFIXES:
+                still = f"ex_{base}{suffix}"
+                if f"media/{still}" in content:
+                    motion_clips[still] = clip.name
+                    suppressed_clips.add(clip.name)
+                    break
     content = _BARE_IMAGE.sub(
         lambda match: _progressive_paragraph(
-            match.group(1), match.group(2), media_dir
+            match.group(1), match.group(2), media_dir, motion_clips
         ),
         content,
         count=0,
@@ -609,31 +623,79 @@ def _render_markdown(
     # Older posts wrap each image in a link to the full file.
     content = _LINKED_IMAGE.sub(
         lambda match: _progressive_paragraph(
-            match.group(1), match.group(2), media_dir
+            match.group(1), match.group(2), media_dir, motion_clips
         ),
         content,
     )
     # Anything left, e.g. several images sharing one paragraph.
     content = _ANY_IMAGE.sub(
         lambda match: _progressive_image_tag(
-            match.group(1), match.group(2), media_dir
+            match.group(1), match.group(2), media_dir, motion_clips
         ),
         content,
     )
-    return _rewrite_videos(content, media_dir, gallery)
+    return _rewrite_videos(content, media_dir, gallery, suppressed_clips)
 
 
-def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) -> str:
+def _video_slide_tag(
+    source_path: str, poster: str, width: int, height: int, alt: str = ""
+) -> str:
+    """Return a lightGallery video slide with a poster.
+
+    Args:
+        source_path: The media path of the video.
+        poster: The media path of the poster image.
+        width: The slide width, used for data-lg-size.
+        height: The slide height, used for data-lg-size.
+        alt: The alt text for the poster.
+
+    Returns:
+        The video slide anchor.
+    """
+    video_data = html.escape(
+        json.dumps(
+            {
+                "source": [{"src": source_path, "type": "video/mp4"}],
+                "attributes": {
+                    "preload": "none",
+                    "controls": True,
+                    "playsinline": True,
+                },
+            }
+        ),
+        quote=True,
+    )
+    return (
+        f'<a class="lg-item lg-video-item" href="{source_path}" '
+        f'data-lg-size="{width}-{height}" data-poster="{poster}" '
+        f'data-video="{video_data}">'
+        # lightGallery's zoom plugin assumes every slide has an .lg-img-wrap;
+        # a hidden one keeps it from crashing on video slides.
+        f'<span class="lg-img-wrap" style="display:none" aria-hidden="true"></span>'
+        f'<img class="post-image post-video-thumb" src="{poster}" '
+        f'width="{width}" height="{height}" alt="{html.escape(alt, quote=True)}" '
+        f'loading="lazy" decoding="async" /></a>'
+    )
+
+
+def _progressive_image_tag(
+    media_path: str,
+    alt: str,
+    media_dir: Path | None,
+    motion_clips: dict[str, str] | None = None,
+) -> str:
     """Return a preview image, wrapped in a lightGallery link.
 
     The preview is the real source, lazily loaded by the browser. The original is
     the link target, so it is only fetched when the gallery opens the slide.
-    Panorama images stay out of the gallery and open in Pannellum instead.
+    Panorama images stay out of the gallery and open in Pannellum instead. A
+    motion photo's still becomes the poster of its clip's video slide.
 
     Args:
         media_path: The media path of the original image.
         alt: The alt text.
         media_dir: The post media directory, or None when it is unknown.
+        motion_clips: Motion still names mapped to their clip file names.
 
     Returns:
         The img element, or a link holding it.
@@ -645,6 +707,17 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
             f'data-panorama-src="{_panorama_media_path(media_path)}" '
             f'alt="{html.escape(alt, quote=True)}" loading="lazy" decoding="async" />'
         )
+
+    still_name = Path(media_path).name
+    clip_name = (motion_clips or {}).get(still_name)
+    if clip_name:
+        poster = _preview_media_path(media_path)
+        size = _image_dimensions(media_dir / still_name) if media_dir else None
+        if size is None and media_dir:
+            size = _image_dimensions(media_dir / Path(poster).name)
+        width, height = size or (640, 480)
+        return _video_slide_tag(f"media/{clip_name}", poster, width, height, alt)
+
     image = (
         f'<img class="post-image" src="{_preview_media_path(media_path)}" '
         f"{_preview_size_attributes(media_dir, media_path)}"
@@ -657,18 +730,24 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
     )
 
 
-def _progressive_paragraph(media_path: str, alt: str, media_dir: Path | None) -> str:
+def _progressive_paragraph(
+    media_path: str,
+    alt: str,
+    media_dir: Path | None,
+    motion_clips: dict[str, str] | None = None,
+) -> str:
     """Return a paragraph holding a progressive image.
 
     Args:
         media_path: The media path of the original image.
         alt: The alt text.
         media_dir: The post media directory, or None when it is unknown.
+        motion_clips: Motion still names mapped to their clip file names.
 
     Returns:
         The paragraph element.
     """
-    image = _progressive_image_tag(media_path, alt, media_dir)
+    image = _progressive_image_tag(media_path, alt, media_dir, motion_clips)
     if _PANORAMA_IMAGE.search(media_path):
         return (
             f'<p class="progressive-image pannellum-panorama" '
@@ -766,31 +845,43 @@ def _video_poster(media_dir: Path | None, source: str) -> str | None:
     return None
 
 
-def _rewrite_videos(content: str, media_dir: Path | None, gallery: str = "none") -> str:
+def _rewrite_videos(
+    content: str,
+    media_dir: Path | None,
+    gallery: str = "none",
+    suppressed_clips: set[str] | None = None,
+) -> str:
     """Stop videos from downloading themselves on page load.
 
     Posts were authored with ``controls autoplay muted loop``, which makes the
     browser fetch the whole file at high priority as soon as the page is parsed.
     Play on tap instead, with a preview still as the poster. When lightGallery is
-    enabled, intentional videos become video slides; motion-photo clips stay
-    inline and their still is already an image slide.
+    enabled, intentional videos become video slides, and a motion photo's clip is
+    suppressed because its still already carries the video slide.
 
     Args:
         content: The rendered HTML.
         media_dir: The post media directory, or None when it is unknown.
         gallery: The configured gallery backend, "lightgallery" or "none".
+        suppressed_clips: Clips already represented by a still's video slide.
 
     Returns:
         The HTML with every video left to load on demand.
     """
-    return _VIDEO_BLOCK.sub(
-        lambda match: _play_on_tap(match, media_dir, gallery),
+    content = _VIDEO_BLOCK.sub(
+        lambda match: _play_on_tap(match, media_dir, gallery, suppressed_clips),
         content,
     )
+    if suppressed_clips:
+        content = re.sub(r'<div class="video">\s*</div>', "", content)
+    return content
 
 
 def _play_on_tap(
-    match: re.Match[str], media_dir: Path | None, gallery: str = "none"
+    match: re.Match[str],
+    media_dir: Path | None,
+    gallery: str = "none",
+    suppressed_clips: set[str] | None = None,
 ) -> str:
     """Rewrite one video element to load only when it is played.
 
@@ -798,9 +889,10 @@ def _play_on_tap(
         match: The video element match.
         media_dir: The post media directory, or None when it is unknown.
         gallery: The configured gallery backend, "lightgallery" or "none".
+        suppressed_clips: Clips already represented by a still's video slide.
 
     Returns:
-        The rewritten video element, or a gallery slide for a real video.
+        The rewritten video element, a video slide, or an empty string.
     """
     attributes = _VIDEO_START_ATTRIBUTES.sub("", match.group("attributes")).rstrip()
     if not re.search(r"\bpreload=", attributes, re.IGNORECASE):
@@ -811,6 +903,8 @@ def _play_on_tap(
     body = match.group("body")
     source = _VIDEO_SOURCE.search(body)
     source_path = source.group("source") if source else None
+    if source_path and suppressed_clips and Path(source_path).name in suppressed_clips:
+        return ""
     poster = _video_poster(media_dir, source_path) if source_path else None
     is_motion = bool(
         source_path and Path(source_path).name.startswith(_MOTION_VIDEO_PREFIXES)
@@ -819,31 +913,7 @@ def _play_on_tap(
     if gallery == "lightgallery" and source_path and poster and not is_motion and media_dir:
         size = _image_dimensions(media_dir / Path(poster).name)
         if size:
-            video_data = html.escape(
-                json.dumps(
-                    {
-                        "source": [{"src": source_path, "type": "video/mp4"}],
-                        "attributes": {
-                            "preload": "none",
-                            "controls": True,
-                            "playsinline": True,
-                        },
-                    }
-                ),
-                quote=True,
-            )
-            return (
-                f'<a class="lg-item lg-video-item" href="{source_path}" '
-                f'data-lg-size="{size[0]}-{size[1]}" data-poster="{poster}" '
-                f'data-video="{video_data}">'
-                # lightGallery's zoom plugin assumes every slide has an
-                # .lg-img-wrap; a hidden one keeps it from crashing on video
-                # slides without affecting the facade.
-                f'<span class="lg-img-wrap" style="display:none" aria-hidden="true"></span>'
-                f'<img class="post-image post-video-thumb" src="{poster}" '
-                f'width="{size[0]}" height="{size[1]}" '
-                f'alt="" loading="lazy" decoding="async" /></a>'
-            )
+            return _video_slide_tag(source_path, poster, size[0], size[1])
 
     if poster and not re.search(r"\bposter=", attributes, re.IGNORECASE):
         attributes += f' data-poster="{poster}"'
