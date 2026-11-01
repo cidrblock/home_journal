@@ -199,6 +199,7 @@ article.single-post > .markdown-body > p:has(img) {
 article.single-post > .markdown-body > p > img {
   object-fit: cover;
   object-position: center;
+  height: auto;
   max-height: 80dvh;
   max-width: 100%;
   text-align: center;

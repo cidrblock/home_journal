@@ -8,7 +8,7 @@
 {% endfor %}
 {% for video in videos %}
   <div class="video">
-    <video controls autoplay muted loop>
+    <video controls preload="none" playsinline>
       <source src="{{ video[0] }}" type="{{ video[1] }}" />
     </video>
   </div>

@@ -112,7 +112,7 @@ class ExistingPost(BasePost):
     def write_html(self) -> None:
         """Write the post to an HTML file."""
         template = jinja_env.get_template("post.html.j2")
-        html_content = _render_markdown(self.md_content)
+        html_content = _render_markdown(self.md_content, media_dir=self.fs_media_dir)
         rendered = template.render(post=self, content=html_content)
         self.fs_post_full_html_path.write_text(rendered, encoding="utf-8")
 
@@ -355,10 +355,21 @@ def _media_groups(post: NewPost, names: list[str]) -> dict[str, list[tuple[Path,
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 _PREVIEW_PREFIX = "preview_"
 _PANORAMA_PREFIX = "pano_"
+_VIDEO_PREFIX = "ex_h264_"
 _PREVIEW_SIZE = (640, 640)
 _PANORAMA_SIZE = (8192, 8192)
 _PANORAMA_IMAGE = re.compile(
     r"\.(?:pano|photosphere)\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE
+)
+_VIDEO_BLOCK = re.compile(
+    r"<video(?P<attributes>[^>]*)>(?P<body>.*?)</video>",
+    re.IGNORECASE | re.DOTALL,
+)
+_VIDEO_START_ATTRIBUTES = re.compile(
+    r'\s+(?:autoplay|loop|muted)(?:="[^"]*")?', re.IGNORECASE
+)
+_VIDEO_SOURCE = re.compile(
+    r'<source[^>]*\bsrc="(?P<source>media/[^"]+)"', re.IGNORECASE
 )
 _TRAILING_IMAGE = re.compile(
     r"[ \t]*!\[\]\(media/([^)\s]+)\)[ \t]*(?:\r?\n)?\Z",
@@ -556,11 +567,12 @@ def _prune_post_list(post_id: str, posts: list[ExistingPost]) -> list[ExistingPo
     return [posts[i] for i in revise]
 
 
-def _render_markdown(content: str) -> str:
+def _render_markdown(content: str, media_dir: Path | None = None) -> str:
     """Render Markdown to HTML.
 
     Args:
         content: The Markdown content to render.
+        media_dir: The post media directory, used for image sizes and video posters.
 
     Returns:
         The rendered HTML.
@@ -575,6 +587,7 @@ def _render_markdown(content: str) -> str:
             f'<p class="progressive-image pannellum-panorama" '
             f'data-panorama="{match.group(1)}"><img '
             f'src="{_preview_media_path(match.group(1))}" '
+            f'{_preview_size_attributes(media_dir, match.group(1))}'
             f'data-full-src="{match.group(1)}" '
             f'data-panorama-src="{_panorama_media_path(match.group(1))}" '
             f'alt="{match.group(2)}" loading="lazy" '
@@ -583,6 +596,7 @@ def _render_markdown(content: str) -> str:
             else (
                 f'<p class="progressive-image"><img '
                 f'src="{_preview_media_path(match.group(1))}" '
+                f'{_preview_size_attributes(media_dir, match.group(1))}'
                 f'data-full-src="{match.group(1)}" alt="{match.group(2)}" loading="lazy" '
                 f'decoding="async" /></p>'
             )
@@ -590,7 +604,101 @@ def _render_markdown(content: str) -> str:
         content,
         flags=re.IGNORECASE,
     )
-    return content
+    return _rewrite_videos(content, media_dir)
+
+
+def _preview_size_attributes(media_dir: Path | None, media_path: str) -> str:
+    """Return width and height attributes for a preview image.
+
+    Reserving the box before the image arrives stops the text from jumping around
+    as previews load.
+
+    Args:
+        media_dir: The post media directory, or None when it is unknown.
+        media_path: The media path of the original image.
+
+    Returns:
+        The attribute string, empty when the preview size is unknown.
+    """
+    if media_dir is None:
+        return ""
+    preview = media_dir / Path(_preview_media_path(media_path)).name
+    try:
+        with Image.open(preview) as image:
+            width, height = image.size
+    except (OSError, ValueError):
+        return ""
+    return f'width="{width}" height="{height}" '
+
+
+def _video_poster(media_dir: Path | None, source: str) -> str | None:
+    """Return the preview image to show before a video plays.
+
+    Args:
+        media_dir: The post media directory, or None when it is unknown.
+        source: The media path of the video source.
+
+    Returns:
+        The poster media path, or None when the video has no preview still.
+    """
+    if media_dir is None:
+        return None
+    stem = Path(source).stem
+    candidates = [stem[len(_VIDEO_PREFIX) :]] if stem.startswith(_VIDEO_PREFIX) else []
+    candidates.append(stem)
+    for candidate in candidates:
+        for suffix in _IMAGE_SUFFIXES:
+            preview = media_dir / f"{_PREVIEW_PREFIX}{candidate}{suffix}"
+            if preview.is_file():
+                return f"media/{preview.name}"
+    return None
+
+
+def _rewrite_videos(content: str, media_dir: Path | None) -> str:
+    """Stop videos from downloading themselves on page load.
+
+    Posts were authored with ``controls autoplay muted loop``, which makes the
+    browser fetch the whole file at high priority as soon as the page is parsed.
+    Play on tap instead, with a preview still as the poster.
+
+    Args:
+        content: The rendered HTML.
+        media_dir: The post media directory, or None when it is unknown.
+
+    Returns:
+        The HTML with every video left to load on demand.
+    """
+    return _VIDEO_BLOCK.sub(
+        lambda match: _play_on_tap(match, media_dir),
+        content,
+    )
+
+
+def _play_on_tap(match: re.Match[str], media_dir: Path | None) -> str:
+    """Rewrite one video element to load only when it is played.
+
+    Args:
+        match: The video element match.
+        media_dir: The post media directory, or None when it is unknown.
+
+    Returns:
+        The rewritten video element.
+    """
+    attributes = _VIDEO_START_ATTRIBUTES.sub("", match.group("attributes")).rstrip()
+    if not re.search(r"\bpreload=", attributes, re.IGNORECASE):
+        attributes += ' preload="none"'
+    if not re.search(r"\bplaysinline\b", attributes, re.IGNORECASE):
+        attributes += " playsinline"
+
+    body = match.group("body")
+    source = _VIDEO_SOURCE.search(body)
+    poster = _video_poster(media_dir, source.group("source")) if source else None
+    if poster and not re.search(r"\bposter=", attributes, re.IGNORECASE):
+        attributes += f' poster="{poster}"'
+    elif not poster:
+        # No still to show: let the browser fetch the first frame, not the file.
+        attributes = attributes.replace('preload="none"', 'preload="metadata"')
+    return f"<video{attributes}>{body}</video>"
 
 
 def _preview_media_path(media_path: str) -> str:
@@ -936,6 +1044,18 @@ def write_author_indices(posts: list[ExistingPost], site_dir: Path) -> None:
         path.write_text(rendered, encoding="utf-8")
 
 
+def _thumbnail_name(index_image: str) -> str:
+    """Return the thumbnail file name for a post index image.
+
+    Args:
+        index_image: The file name of the post index image.
+
+    Returns:
+        The thumbnail file name, always WebP.
+    """
+    return f"thumb_{Path(index_image).stem}.webp"
+
+
 def build_thumbnails(posts: list[ExistingPost]) -> None:
     """Build thumbnails for the post.
 
@@ -952,23 +1072,25 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
         if not index_image:
             continue
         image_path = image_dir / index_image
-        thumbnail_name = f"thumb_{index_image}"
+        thumbnail_name = _thumbnail_name(index_image)
+        thumbnail_path = image_dir / thumbnail_name
         if post.thumbnail_parent_url is None:
             raise ValueError("Thumbnail URL not set")
         post.thumbnail_url = post.thumbnail_parent_url / thumbnail_name
-        if not (image_dir / thumbnail_name).exists():
+        if not thumbnail_path.exists():
             image = Image.open(image_path)
             transposed = ImageOps.exif_transpose(image)
             if transposed is not None:
                 image = transposed
             image.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
-            save_image = image
-            if thumbnail_name.lower().endswith((".jpg", ".jpeg")) and image.mode not in (
-                "RGB",
-                "L",
-            ):
-                save_image = image.convert("RGB")
-            save_image.save(image_dir / thumbnail_name)
+            image.convert("RGB").save(
+                thumbnail_path, format="WEBP", quality=80, method=6
+            )
+            # Thumbnails from older builds were JPEG; drop them now that the tile
+            # points somewhere else.
+            for stale in image_dir.glob(f"thumb_{Path(index_image).stem}.*"):
+                if stale != thumbnail_path:
+                    stale.unlink()
             count += 1
     logger.debug("Built %s thumbnails", count)
 

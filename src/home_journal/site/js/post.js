@@ -219,7 +219,7 @@ function loadProgressiveImages() {
         observer.unobserve(entry.target);
       });
     },
-    { rootMargin: "800px 0px" }
+    { rootMargin: "200px 0px" }
   );
   images.forEach(function (image) {
     observer.observe(image);

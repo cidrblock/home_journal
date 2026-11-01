@@ -3,7 +3,10 @@
 from datetime import datetime
 from types import SimpleNamespace
 
+from home_journal.utils import _render_markdown
+from home_journal.utils import _thumbnail_name
 from home_journal.utils import jinja_env
+from PIL import Image
 
 
 def _post(**kwargs: object) -> SimpleNamespace:
@@ -51,3 +54,46 @@ def test_pannellum_is_only_loaded_for_panoramas() -> None:
 
     assert "/js/pannellum.js" in panorama
     assert "/css/pannellum.css" in panorama
+
+
+def test_thumbnails_keep_their_size_but_ship_as_webp() -> None:
+    assert _thumbnail_name("PXL_20261031_012553112.jpg") == "thumb_PXL_20261031_012553112.webp"
+
+
+def test_videos_are_left_to_load_on_tap(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (640, 360)).save(media / "preview_clip.jpg")
+    html = _render_markdown(
+        '<div class="video"><video controls autoplay muted loop>'
+        '<source src="media/clip.mp4" type="video/mp4" /></video></div>',
+        media_dir=media,
+    )
+
+    assert "autoplay" not in html
+    assert "loop" not in html
+    assert "muted" not in html
+    assert 'preload="none"' in html
+    assert 'poster="media/preview_clip.jpg"' in html
+    assert "playsinline" in html
+
+
+def test_video_without_a_still_fetches_only_metadata(tmp_path: Path) -> None:
+    html = _render_markdown(
+        '<div class="video"><video controls>'
+        '<source src="media/clip.mp4" type="video/mp4" /></video></div>',
+        media_dir=tmp_path,
+    )
+
+    assert 'preload="metadata"' in html
+    assert "poster=" not in html
+
+
+def test_previews_reserve_their_box(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (640, 480)).save(media / "preview_a.jpg")
+
+    html = _render_markdown("![](media/a.jpg)", media_dir=media)
+
+    assert 'width="640" height="480"' in html
