@@ -107,9 +107,8 @@ def test_posts_ship_previews_and_defer_the_original(tmp_path: Path) -> None:
 
     html = _render_markdown("![](media/a.jpg)", media_dir=media)
 
-    assert '<a class="pswp-item" href="media/a.jpg"' in html
-    assert 'data-pswp-width="640"' in html
-    assert 'data-pswp-height="480"' in html
+    assert '<a class="lg-item" href="media/a.jpg"' in html
+    assert 'data-lg-size="640-480"' in html
     assert '<img class="post-image" src="media/preview_a.jpg"' in html
     assert '<img class="post-image" src="media/a.jpg"' not in html
     assert 'loading="lazy"' in html
@@ -124,7 +123,7 @@ def test_linked_images_show_the_preview_too(tmp_path: Path) -> None:
 
     html = _render_markdown("[![](media/b.jpg)](media/b.jpg)", media_dir=media)
 
-    assert '<a class="pswp-item" href="media/b.jpg"' in html
+    assert '<a class="lg-item" href="media/b.jpg"' in html
     assert '<img class="post-image" src="media/preview_b.jpg"' in html
     assert '<img class="post-image" src="media/b.jpg"' not in html
 
@@ -137,8 +136,7 @@ def test_gallery_uses_the_original_size(tmp_path: Path) -> None:
 
     html = _render_markdown("![](media/photo.jpg)", media_dir=media)
 
-    assert 'data-pswp-width="1200"' in html
-    assert 'data-pswp-height="800"' in html
+    assert 'data-lg-size="1200-800"' in html
 
 
 def test_gallery_dimensions_follow_exif_orientation(tmp_path: Path) -> None:
@@ -152,30 +150,71 @@ def test_gallery_dimensions_follow_exif_orientation(tmp_path: Path) -> None:
 
     html = _render_markdown("![](media/photo.jpg)", media_dir=media)
 
-    assert 'data-pswp-width="800"' in html
-    assert 'data-pswp-height="1200"' in html
+    assert 'data-lg-size="800-1200"' in html
 
 
-def test_photoswipe_is_only_loaded_for_gallery_posts() -> None:
+def test_real_videos_become_gallery_slides(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (640, 360)).save(media / "preview_clip.jpg")
+    html = _render_markdown(
+        '<div class="video"><video controls>'
+        '<source src="media/clip.mp4" type="video/mp4" /></video></div>',
+        media_dir=media,
+        gallery="lightgallery",
+    )
+
+    assert 'class="lg-item lg-video-item"' in html
+    assert 'href="media/clip.mp4"' in html
+    assert 'data-lg-size="640-360"' in html
+    assert 'data-poster="media/preview_clip.jpg"' in html
+    assert "&quot;source&quot;" in html
+    assert "<video" not in html
+
+
+def test_motion_photo_clips_stay_inline(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (640, 360)).save(media / "preview_ex_clip.jpg")
+    html = _render_markdown(
+        '<div class="video"><video controls>'
+        '<source src="media/ex_h264_clip.mp4" type="video/mp4" /></video></div>',
+        media_dir=media,
+        gallery="lightgallery",
+    )
+
+    assert 'lg-video-item' not in html
+    assert "<video" in html
+    assert 'data-poster="media/preview_ex_clip.jpg"' in html
+
+
+def test_lightgallery_is_only_loaded_for_gallery_posts() -> None:
     template = jinja_env.get_template("post.html.j2")
 
     plain = template.render(
         post=_post(),
         content='<p class="progressive-image pannellum-panorama"><img src="media/a.jpg" /></p>',
+        gallery="lightgallery",
     )
-    assert "/js/photoswipe.umd.min.js" not in plain
-    assert "/js/photoswipe-lightbox.umd.min.js" not in plain
-    assert "/css/photoswipe.css" not in plain
-    assert "lightense" not in plain
+    assert "/js/vendor/lightgallery.min.js" not in plain
+    assert "/css/vendor/lightgallery.css" not in plain
 
     gallery = template.render(
         post=_post(),
-        content='<a class="pswp-item" href="media/a.jpg"><img src="media/preview_a.jpg" /></a>',
+        content='<a class="lg-item" href="media/a.jpg"><img src="media/preview_a.jpg" /></a>',
+        gallery="lightgallery",
     )
-    assert "/js/photoswipe.umd.min.js" in gallery
-    assert "/js/photoswipe-lightbox.umd.min.js" in gallery
-    assert "/css/photoswipe.css" in gallery
-    assert "lightense" not in gallery
+    assert "/js/vendor/lightgallery.min.js" in gallery
+    assert "/js/vendor/lg-video.min.js" in gallery
+    assert "/js/vendor/lg-zoom.min.js" in gallery
+    assert "/css/vendor/lightgallery.css" in gallery
+
+    unconfigured = template.render(
+        post=_post(),
+        content='<a class="lg-item" href="media/a.jpg"><img src="media/preview_a.jpg" /></a>',
+        gallery="none",
+    )
+    assert "/js/vendor/lightgallery.min.js" not in unconfigured
 
 
 def test_post_images_survive_being_moved_out_of_the_markdown_body() -> None:
@@ -204,5 +243,14 @@ def test_post_script_does_not_fetch_originals_while_scrolling() -> None:
     assert "pointerdown" not in script
     assert "loadProgressiveImages" not in script
     assert "preloadFullImage" not in script
-    assert "PhotoSwipeLightbox" in script
-    assert "window.pswp" in script
+    assert "lightGallery(" in script
+    assert ".lg-outer" in script
+    assert "PhotoSwipe" not in script
+
+
+def test_no_gpl_gallery_assets_in_the_public_repo() -> None:
+    # Licensing boundary: lightGallery is GPLv3 and is supplied by the private
+    # home-lab build, never committed to the public MIT repository.
+    site = Path(__file__).parent.parent / "src" / "home_journal" / "site"
+    offenders = [path.name for path in site.rglob("*") if "lightgallery" in path.name.lower()]
+    assert offenders == []

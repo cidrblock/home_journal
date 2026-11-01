@@ -110,6 +110,12 @@ Each time home-journal is run with the `--init` flag it will copy the css, js, a
 
 Until stable releases are available, the css and js files may change so running with the `--init` flag will be necessary. Improvements to the css and js files are welcomed as pull requests to the repository.
 
+## Gallery
+
+Post photos open in a [lightGallery](https://www.lightgalleryjs.com/) gallery with swipe and pinch zoom. Intentional videos become video slides with a poster; motion-photo stills are gallery images and their short clips stay inline. Panoramas still open in Pannellum outside the gallery.
+
+The app ships no gallery library. Set `gallery: lightgallery` in the site `config.yml` and place the lightGallery assets at `/js/vendor/`, `/css/vendor/`, `/css/images/` and `/css/fonts/`. lightGallery is GPLv3; this repository is MIT and deliberately does not vendor it. The private home-lab build supplies the pinned assets to the site directory. With the default `gallery: none`, the same markup renders as plain links that open the original media.
+
 ## Help
 
 ```
@@ -162,3 +168,4 @@ Please see the individual files in the root of the repo for the most recent exam
 - Easy wordpress xml to md https://github.com/lonekorean/wordpress-export-to-markdown
 - Sample photos https://unsplash.com/
 - Offline city data https://www.geonames.org/ (CC BY 4.0)
+- Gallery lightbox https://www.lightgalleryjs.com/ (GPLv3, supplied by the private build, not vendored here)

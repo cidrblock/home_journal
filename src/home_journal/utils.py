@@ -1,4 +1,6 @@
 """Helper utilities."""
+import html
+import json
 import logging
 import re
 import shutil
@@ -109,11 +111,13 @@ class ExistingPost(BasePost):
         """
         return f"{_slugify(self.author)}.html"
 
-    def write_html(self) -> None:
+    def write_html(self, gallery: str = "none") -> None:
         """Write the post to an HTML file."""
         template = jinja_env.get_template("post.html.j2")
-        html_content = _render_markdown(self.md_content, media_dir=self.fs_media_dir)
-        rendered = template.render(post=self, content=html_content)
+        html_content = _render_markdown(
+            self.md_content, media_dir=self.fs_media_dir, gallery=gallery
+        )
+        rendered = template.render(post=self, content=html_content, gallery=gallery)
         self.fs_post_full_html_path.write_text(rendered, encoding="utf-8")
 
 
@@ -356,6 +360,7 @@ _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 _PREVIEW_PREFIX = "preview_"
 _PANORAMA_PREFIX = "pano_"
 _VIDEO_PREFIX = "ex_h264_"
+_MOTION_VIDEO_PREFIXES = ("ex_h264_", "ex_orig_")
 _PREVIEW_SIZE = (640, 640)
 _PANORAMA_SIZE = (8192, 8192)
 _PANORAMA_IMAGE = re.compile(
@@ -577,12 +582,15 @@ def _prune_post_list(post_id: str, posts: list[ExistingPost]) -> list[ExistingPo
     return [posts[i] for i in revise]
 
 
-def _render_markdown(content: str, media_dir: Path | None = None) -> str:
+def _render_markdown(
+    content: str, media_dir: Path | None = None, gallery: str = "none"
+) -> str:
     """Render Markdown to HTML.
 
     Args:
         content: The Markdown content to render.
         media_dir: The post media directory, used for image sizes and video posters.
+        gallery: The configured gallery backend, "lightgallery" or "none".
 
     Returns:
         The rendered HTML.
@@ -592,28 +600,34 @@ def _render_markdown(content: str, media_dir: Path | None = None) -> str:
         options=cmarkgfmOptions.CMARK_OPT_UNSAFE,
     )
     content = _BARE_IMAGE.sub(
-        lambda match: _progressive_paragraph(match.group(1), match.group(2), media_dir),
+        lambda match: _progressive_paragraph(
+            match.group(1), match.group(2), media_dir
+        ),
         content,
         count=0,
     )
     # Older posts wrap each image in a link to the full file.
     content = _LINKED_IMAGE.sub(
-        lambda match: _progressive_paragraph(match.group(1), match.group(2), media_dir),
+        lambda match: _progressive_paragraph(
+            match.group(1), match.group(2), media_dir
+        ),
         content,
     )
     # Anything left, e.g. several images sharing one paragraph.
     content = _ANY_IMAGE.sub(
-        lambda match: _progressive_image_tag(match.group(1), match.group(2), media_dir),
+        lambda match: _progressive_image_tag(
+            match.group(1), match.group(2), media_dir
+        ),
         content,
     )
-    return _rewrite_videos(content, media_dir)
+    return _rewrite_videos(content, media_dir, gallery)
 
 
 def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) -> str:
-    """Return a preview image, wrapped in a PhotoSwipe gallery link.
+    """Return a preview image, wrapped in a lightGallery link.
 
     The preview is the real source, lazily loaded by the browser. The original is
-    the link target, so it is only fetched when PhotoSwipe opens the slide.
+    the link target, so it is only fetched when the gallery opens the slide.
     Panorama images stay out of the gallery and open in Pannellum instead.
 
     Args:
@@ -629,16 +643,16 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
             f'<img class="post-image" src="{_preview_media_path(media_path)}" '
             f"{_preview_size_attributes(media_dir, media_path)}"
             f'data-panorama-src="{_panorama_media_path(media_path)}" '
-            f'alt="{alt}" loading="lazy" decoding="async" />'
+            f'alt="{html.escape(alt, quote=True)}" loading="lazy" decoding="async" />'
         )
     image = (
         f'<img class="post-image" src="{_preview_media_path(media_path)}" '
         f"{_preview_size_attributes(media_dir, media_path)}"
-        f'alt="{alt}" loading="lazy" decoding="async" />'
+        f'alt="{html.escape(alt, quote=True)}" loading="lazy" decoding="async" />'
     )
     return (
-        f'<a class="pswp-item" href="{media_path}" '
-        f"{_original_size_attributes(media_dir, media_path)}>"
+        f'<a class="lg-item" href="{media_path}" '
+        f"{_lg_size_attribute(media_dir, media_path)}>"
         f"{image}</a>"
     )
 
@@ -687,30 +701,36 @@ def _preview_size_attributes(media_dir: Path | None, media_path: str) -> str:
     return f'width="{width}" height="{height}" '
 
 
-def _original_size_attributes(media_dir: Path | None, media_path: str) -> str:
-    """Return the PhotoSwipe width and height of the original image.
+def _image_dimensions(path: Path) -> tuple[int, int] | None:
+    """Return an image's displayed dimensions, applying EXIF orientation."""
+    try:
+        with Image.open(path) as image:
+            return ImageOps.exif_transpose(image).size
+    except (OSError, ValueError):
+        return None
 
-    PhotoSwipe needs the real dimensions to lay out and zoom a slide. EXIF
-    orientation is applied so a rotated phone photo reports the size it is shown
-    at, not the stored pixel grid.
+
+def _lg_size_attribute(media_dir: Path | None, media_path: str) -> str:
+    """Return the lightGallery data-lg-size attribute for an image.
+
+    lightGallery needs the real dimensions for the zoom-from-origin animation.
+    EXIF orientation is applied so a rotated phone photo reports the size it is
+    shown at, not the stored pixel grid.
 
     Args:
         media_dir: The post media directory, or None when it is unknown.
         media_path: The media path of the original image.
 
     Returns:
-        The data-pswp-width and data-pswp-height attributes, empty when unknown.
+        The data-lg-size attribute, empty when the size is unknown.
     """
     if media_dir is None:
         return ""
     preview = media_dir / Path(_preview_media_path(media_path)).name
     for candidate in (media_dir / Path(media_path).name, preview):
-        try:
-            with Image.open(candidate) as image:
-                width, height = ImageOps.exif_transpose(image).size
-        except (OSError, ValueError):
-            continue
-        return f'data-pswp-width="{width}" data-pswp-height="{height}" '
+        size = _image_dimensions(candidate)
+        if size:
+            return f'data-lg-size="{size[0]}-{size[1]}" '
     return ""
 
 
@@ -727,45 +747,60 @@ def _video_poster(media_dir: Path | None, source: str) -> str | None:
     if media_dir is None:
         return None
     stem = Path(source).stem
-    candidates = [stem[len(_VIDEO_PREFIX) :]] if stem.startswith(_VIDEO_PREFIX) else []
-    candidates.append(stem)
-    for candidate in candidates:
+    names: list[str] = []
+    for prefix in _MOTION_VIDEO_PREFIXES:
+        if stem.startswith(prefix):
+            # Motion photos: the still is ex_<base>, its preview is
+            # preview_ex_<base>. Older code only looked for preview_<base>.
+            names.append("ex_" + stem[len(prefix) :])
+            break
+    names.append(stem)
+    for name in names:
         for suffix in _IMAGE_SUFFIXES:
-            preview = media_dir / f"{_PREVIEW_PREFIX}{candidate}{suffix}"
+            preview = media_dir / f"{_PREVIEW_PREFIX}{name}{suffix}"
             if preview.is_file():
                 return f"media/{preview.name}"
+            still = media_dir / f"{name}{suffix}"
+            if still.is_file():
+                return f"media/{still.name}"
     return None
 
 
-def _rewrite_videos(content: str, media_dir: Path | None) -> str:
+def _rewrite_videos(content: str, media_dir: Path | None, gallery: str = "none") -> str:
     """Stop videos from downloading themselves on page load.
 
     Posts were authored with ``controls autoplay muted loop``, which makes the
     browser fetch the whole file at high priority as soon as the page is parsed.
-    Play on tap instead, with a preview still as the poster.
+    Play on tap instead, with a preview still as the poster. When lightGallery is
+    enabled, intentional videos become video slides; motion-photo clips stay
+    inline and their still is already an image slide.
 
     Args:
         content: The rendered HTML.
         media_dir: The post media directory, or None when it is unknown.
+        gallery: The configured gallery backend, "lightgallery" or "none".
 
     Returns:
         The HTML with every video left to load on demand.
     """
     return _VIDEO_BLOCK.sub(
-        lambda match: _play_on_tap(match, media_dir),
+        lambda match: _play_on_tap(match, media_dir, gallery),
         content,
     )
 
 
-def _play_on_tap(match: re.Match[str], media_dir: Path | None) -> str:
+def _play_on_tap(
+    match: re.Match[str], media_dir: Path | None, gallery: str = "none"
+) -> str:
     """Rewrite one video element to load only when it is played.
 
     Args:
         match: The video element match.
         media_dir: The post media directory, or None when it is unknown.
+        gallery: The configured gallery backend, "lightgallery" or "none".
 
     Returns:
-        The rewritten video element.
+        The rewritten video element, or a gallery slide for a real video.
     """
     attributes = _VIDEO_START_ATTRIBUTES.sub("", match.group("attributes")).rstrip()
     if not re.search(r"\bpreload=", attributes, re.IGNORECASE):
@@ -775,7 +810,41 @@ def _play_on_tap(match: re.Match[str], media_dir: Path | None) -> str:
 
     body = match.group("body")
     source = _VIDEO_SOURCE.search(body)
-    poster = _video_poster(media_dir, source.group("source")) if source else None
+    source_path = source.group("source") if source else None
+    poster = _video_poster(media_dir, source_path) if source_path else None
+    is_motion = bool(
+        source_path and Path(source_path).name.startswith(_MOTION_VIDEO_PREFIXES)
+    )
+
+    if gallery == "lightgallery" and source_path and poster and not is_motion and media_dir:
+        size = _image_dimensions(media_dir / Path(poster).name)
+        if size:
+            video_data = html.escape(
+                json.dumps(
+                    {
+                        "source": [{"src": source_path, "type": "video/mp4"}],
+                        "attributes": {
+                            "preload": "none",
+                            "controls": True,
+                            "playsinline": True,
+                        },
+                    }
+                ),
+                quote=True,
+            )
+            return (
+                f'<a class="lg-item lg-video-item" href="{source_path}" '
+                f'data-lg-size="{size[0]}-{size[1]}" data-poster="{poster}" '
+                f'data-video="{video_data}">'
+                # lightGallery's zoom plugin assumes every slide has an
+                # .lg-img-wrap; a hidden one keeps it from crashing on video
+                # slides without affecting the facade.
+                f'<span class="lg-img-wrap" style="display:none" aria-hidden="true"></span>'
+                f'<img class="post-image post-video-thumb" src="{poster}" '
+                f'width="{size[0]}" height="{size[1]}" '
+                f'alt="" loading="lazy" decoding="async" /></a>'
+            )
+
     if poster and not re.search(r"\bposter=", attributes, re.IGNORECASE):
         attributes += f' data-poster="{poster}"'
     # No still to show: leave preload="none". preload="metadata" sounds cheap but
@@ -978,6 +1047,61 @@ def update_post(site_dir: Path, request: Request) -> ExistingPost | None:
     return existing
 
 
+def build_video_posters(site_dir: Path) -> int:
+    """Build a poster still for every intentional video that lacks one.
+
+    Motion-photo clips (ex_h264_/ex_orig_) already have their still; only real
+    videos need a frame extracted. lightGallery uses the poster as the slide
+    thumbnail and to derive the slide's aspect ratio.
+
+    Args:
+        site_dir: The directory of the site.
+
+    Returns:
+        The number of posters built.
+    """
+    count = 0
+    for video_path in (site_dir / "posts").rglob("*.mp4"):
+        if not video_path.is_file():
+            continue
+        if video_path.name.startswith(_MOTION_VIDEO_PREFIXES):
+            continue
+        poster_path = video_path.with_name(
+            _PREVIEW_PREFIX + video_path.with_suffix(".jpg").name
+        )
+        if poster_path.exists():
+            continue
+        result = subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-ss",
+                "0.5",
+                "-i",
+                str(video_path),
+                "-frames:v",
+                "1",
+                "-vf",
+                "scale=640:-2",
+                "-q:v",
+                "4",
+                str(poster_path),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 and poster_path.is_file():
+            count += 1
+            continue
+        logger.warning(
+            "Failed to build video poster: path=%s stderr=%s",
+            video_path,
+            result.stderr.strip()[-500:],
+        )
+    return count
+
+
 def convert_all_html(
     site_dir: Path,
     post_id: str | None = None,
@@ -992,6 +1116,8 @@ def convert_all_html(
         The number of posts built.
     """
     build_image_previews(site_dir)
+    build_video_posters(site_dir)
+    gallery = str(load_site_config(site_dir).get("gallery", "none"))
     posts_dir = site_dir / "posts"
     md_glob = posts_dir.rglob("*.md")
     all_posts = _populate_post_metadata(md_glob=md_glob, site_dir=site_dir)
@@ -1004,7 +1130,7 @@ def convert_all_html(
         revise_posts = all_posts
 
     for post in revise_posts:
-        post.write_html()
+        post.write_html(gallery=gallery)
     return revise_posts, all_posts
 
 

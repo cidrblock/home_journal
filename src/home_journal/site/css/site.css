@@ -108,7 +108,7 @@ img {
 }
 
 /* The gallery draws its own image; the rounded corners are for inline photos. */
-.pswp__img {
+.lg-outer img {
   border-radius: 0;
 }
 

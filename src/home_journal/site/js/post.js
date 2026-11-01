@@ -3,9 +3,9 @@ var activePanorama = null;
 
 function checkKey(e) {
   e = e || window.event;
-  // PhotoSwipe owns the keyboard while it is open; without this, the arrow
+  // lightGallery owns the keyboard while it is open; without this, the arrow
   // keys would also change posts underneath the gallery.
-  if (window.pswp) {
+  if (document.querySelector(".lg-outer")) {
     return;
   }
   var modal = document.getElementById("delete-dialog");
@@ -212,19 +212,34 @@ function hydrateMedia() {
 }
 
 function initializeGallery() {
-  if (!window.PhotoSwipeLightbox || !window.PhotoSwipe) {
+  if (!window.lightGallery || !window.lgVideo || !window.lgZoom) {
     return;
   }
-  if (!document.querySelector("a.pswp-item")) {
+  var container = document.querySelector(".markdown-body");
+  if (!container || !container.querySelector("a.lg-item")) {
     return;
   }
-  var lightbox = new PhotoSwipeLightbox({
-    gallery: ".markdown-body",
-    children: "a.pswp-item",
-    pswpModule: PhotoSwipe,
-    bgOpacity: 1,
+  var gallery = lightGallery(container, {
+    selector: "a.lg-item",
+    plugins: [lgVideo, lgZoom],
+    licenseKey: "0000-0000-000-0000",
+    speed: 400,
+    preload: 1,
+    download: false,
+    autoplayFirstVideo: false,
+    autoplayVideoOnSlide: false,
+    gotoNextSlideOnVideoEnd: false,
+    videoMaxSize: "1280-720",
   });
-  lightbox.init();
+  // lightGallery 2.9 leaves __slideVideoInfo unset for markup videos, so its
+  // HTML5 play handler has nothing to build. Fill it in for our MP4 slides.
+  if (gallery && gallery.galleryItems) {
+    gallery.galleryItems.forEach(function (item) {
+      if (item.video) {
+        item.__slideVideoInfo = { html5: true };
+      }
+    });
+  }
 }
 
 function startMedia() {
@@ -236,7 +251,7 @@ function startMedia() {
   hydrateMedia();
 }
 
-// PhotoSwipe only binds click handlers, so it can start with the document. The
+// lightGallery only binds click handlers, so it can start with the document. The
 // posters and panoramas wait for paint, as before.
 window.addEventListener("DOMContentLoaded", initializeGallery, false);
 window.addEventListener("load", startMedia, false);
