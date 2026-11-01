@@ -17,10 +17,10 @@ def test_pano_images_render_as_pannellum_viewers() -> None:
     )
 
     assert '<p class="progressive-image pannellum-panorama"' in rendered
-    assert 'src="media/preview_PXL_20260920_150334255.PANO.jpg"' in rendered
+    assert 'data-src="media/preview_PXL_20260920_150334255.PANO.jpg"' in rendered
     assert 'data-panorama="media/PXL_20260920_150334255.PANO.jpg"' in rendered
     assert 'data-full-src="media/ordinary.jpg"' in rendered
-    assert '<p class="progressive-image"><img src="media/preview_ordinary.jpg"' in rendered
+    assert '<p class="progressive-image"><img data-src="media/preview_ordinary.jpg"' in rendered
 
 
 def test_photosphere_images_render_as_pannellum_viewers() -> None:

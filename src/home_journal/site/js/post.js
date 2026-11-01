@@ -175,6 +175,65 @@ function initializePanoramas() {
   });
 }
 
+function slowConnection() {
+  var connection = navigator.connection || navigator.mozConnection || {};
+  if (connection.saveData) {
+    return true;
+  }
+  if (/2g|3g/.test(connection.effectiveType || "")) {
+    return true;
+  }
+  return typeof connection.downlink === "number" && connection.downlink > 0 && connection.downlink < 1.5;
+}
+
+function hydrateImage(image) {
+  if (!image.dataset.src) {
+    return;
+  }
+  image.src = image.dataset.src;
+  delete image.dataset.src;
+}
+
+function hydratePoster(video) {
+  if (!video.dataset.poster) {
+    return;
+  }
+  video.poster = video.dataset.poster;
+  delete video.dataset.poster;
+}
+
+function hydrateMedia() {
+  var elements = Array.from(
+    document.querySelectorAll("img[data-src], video[data-poster]")
+  );
+  var reveal = function (element) {
+    if (element.tagName === "VIDEO") {
+      hydratePoster(element);
+    } else {
+      hydrateImage(element);
+    }
+  };
+  if (!("IntersectionObserver" in window)) {
+    elements.forEach(reveal);
+    return;
+  }
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) {
+          return;
+        }
+        reveal(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "0px" }
+  );
+  elements.forEach(function (element) {
+    observer.observe(element);
+  });
+}
+
 function loadFullImage(image) {
   var fullSrc = image.dataset.fullSrc;
   if (
@@ -203,6 +262,13 @@ function loadFullImage(image) {
 }
 
 function loadProgressiveImages() {
+  // Phones read the 640px preview, which already covers their screen; pulling a
+  // multi-megabyte original while scrolling is what saturates a weak link. Tapping
+  // an image still upgrades it to the full size (see upgradeOnTap), and a slow
+  // connection keeps previews even on a wide screen.
+  if (slowConnection() || !window.matchMedia("(min-width: 768px)").matches) {
+    return;
+  }
   var images = Array.from(document.querySelectorAll("img[data-full-src]"));
   if (!("IntersectionObserver" in window)) {
     images.forEach(loadFullImage);
@@ -215,28 +281,71 @@ function loadProgressiveImages() {
         if (!entry.isIntersecting) {
           return;
         }
-        loadFullImage(entry.target);
-        observer.unobserve(entry.target);
+        var image = entry.target;
+        observer.unobserve(image);
+        if (image.dataset.src) {
+          hydrateImage(image);
+        }
+        if (!image.complete) {
+          var load = function () {
+            loadFullImage(image);
+          };
+          image.addEventListener("load", load, { once: true });
+          image.addEventListener("error", load, { once: true });
+          return;
+        }
+        loadFullImage(image);
       });
     },
-    { rootMargin: "200px 0px" }
+    { rootMargin: "0px" }
   );
   images.forEach(function (image) {
     observer.observe(image);
   });
 }
 
-window.addEventListener(
-  "load",
-  function () {
-    initializePanoramas();
-    loadProgressiveImages();
-    const lightboxImages = Array.from(document.querySelectorAll("img")).filter(
-      function (image) {
-        return !image.closest(".pannellum-panorama");
-      }
+function upgradeOnTap(image) {
+  var fullSrc = image.dataset.fullSrc;
+  if (!fullSrc || image.dataset.fullLoaded || image.dataset.fullLoading) {
+    return;
+  }
+  image.dataset.fullLoaded = "true";
+  image.src = fullSrc;
+}
+
+function initializeUpgradeOnTap() {
+  var images = Array.from(document.querySelectorAll("img[data-full-src]"));
+  images.forEach(function (image) {
+    image.addEventListener(
+      "pointerdown",
+      function () {
+        upgradeOnTap(image);
+      },
+      { passive: true }
     );
-    Lightense(lightboxImages);
-  },
-  false
-);
+  });
+}
+
+function startMedia() {
+  if (startMedia.done) {
+    return;
+  }
+  startMedia.done = true;
+  initializePanoramas();
+  hydrateMedia();
+  initializeUpgradeOnTap();
+  loadProgressiveImages();
+  const lightboxImages = Array.from(document.querySelectorAll("img")).filter(
+    function (image) {
+      return !image.closest(".pannellum-panorama");
+    }
+  );
+  Lightense(lightboxImages);
+}
+
+// Start once the document has painted: images must never compete with the post
+// itself, and a stalled subresource must not hold them back forever.
+window.addEventListener("load", startMedia, false);
+window.addEventListener("DOMContentLoaded", function () {
+  setTimeout(startMedia, 1000);
+}, false);

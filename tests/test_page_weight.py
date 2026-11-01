@@ -74,7 +74,7 @@ def test_videos_are_left_to_load_on_tap(tmp_path: Path) -> None:
     assert "loop" not in html
     assert "muted" not in html
     assert 'preload="none"' in html
-    assert 'poster="media/preview_clip.jpg"' in html
+    assert 'data-poster="media/preview_clip.jpg"' in html
     assert "playsinline" in html
 
 
@@ -86,7 +86,7 @@ def test_video_without_a_still_fetches_only_metadata(tmp_path: Path) -> None:
     )
 
     assert 'preload="metadata"' in html
-    assert "poster=" not in html
+    assert "data-poster=" not in html
 
 
 def test_previews_reserve_their_box(tmp_path: Path) -> None:
@@ -97,3 +97,26 @@ def test_previews_reserve_their_box(tmp_path: Path) -> None:
     html = _render_markdown("![](media/a.jpg)", media_dir=media)
 
     assert 'width="640" height="480"' in html
+
+
+def test_previews_fetch_nothing_until_the_post_is_on_screen(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (640, 480)).save(media / "preview_a.jpg")
+
+    html = _render_markdown("![](media/a.jpg)", media_dir=media)
+
+    assert 'data-src="media/preview_a.jpg"' in html
+    assert "<img src=" not in html
+
+
+def test_linked_images_are_deferred_too(tmp_path: Path) -> None:
+    media = tmp_path / "media"
+    media.mkdir()
+    Image.new("RGB", (320, 240)).save(media / "preview_b.jpg")
+
+    html = _render_markdown("[![](media/b.jpg)](media/b.jpg)", media_dir=media)
+
+    assert '<a href="media/b.jpg">' in html
+    assert 'data-src="media/preview_b.jpg"' in html
+    assert "<img src=" not in html

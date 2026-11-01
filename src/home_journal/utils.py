@@ -361,6 +361,16 @@ _PANORAMA_SIZE = (8192, 8192)
 _PANORAMA_IMAGE = re.compile(
     r"\.(?:pano|photosphere)\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE
 )
+_BARE_IMAGE = re.compile(
+    r'<p><img src="(media/[^"\s]+)" alt="([^"]*)"[^>]*/>\s*</p>', re.IGNORECASE
+)
+_LINKED_IMAGE = re.compile(
+    r'<p><a href="(media/[^"\s]+)"><img src="[^"]*" alt="([^"]*)"[^>]*/>\s*</a></p>',
+    re.IGNORECASE,
+)
+_ANY_IMAGE = re.compile(
+    r'<img src="(media/[^"\s]+)" alt="([^"]*)"[^>]*/>', re.IGNORECASE
+)
 _VIDEO_BLOCK = re.compile(
     r"<video(?P<attributes>[^>]*)>(?P<body>.*?)</video>",
     re.IGNORECASE | re.DOTALL,
@@ -581,30 +591,71 @@ def _render_markdown(content: str, media_dir: Path | None = None) -> str:
         content,
         options=cmarkgfmOptions.CMARK_OPT_UNSAFE,
     )
-    content = re.sub(
-        r'<p><img src="(media/[^"\s]+)" alt="([^"]*)" /></p>',
+    content = _BARE_IMAGE.sub(
+        lambda match: _progressive_paragraph(match.group(1), match.group(2), media_dir),
+        content,
+        count=0,
+    )
+    # Older posts wrap each image in a link to the full file.
+    content = _LINKED_IMAGE.sub(
         lambda match: (
-            f'<p class="progressive-image pannellum-panorama" '
-            f'data-panorama="{match.group(1)}"><img '
-            f'src="{_preview_media_path(match.group(1))}" '
-            f'{_preview_size_attributes(media_dir, match.group(1))}'
-            f'data-full-src="{match.group(1)}" '
-            f'data-panorama-src="{_panorama_media_path(match.group(1))}" '
-            f'alt="{match.group(2)}" loading="lazy" '
-            f'decoding="async" /></p>'
-            if _PANORAMA_IMAGE.search(match.group(1))
-            else (
-                f'<p class="progressive-image"><img '
-                f'src="{_preview_media_path(match.group(1))}" '
-                f'{_preview_size_attributes(media_dir, match.group(1))}'
-                f'data-full-src="{match.group(1)}" alt="{match.group(2)}" loading="lazy" '
-                f'decoding="async" /></p>'
-            )
+            f'<p><a href="{match.group(1)}">'
+            f"{_progressive_image_tag(match.group(1), match.group(2), media_dir)}</a></p>"
         ),
         content,
-        flags=re.IGNORECASE,
+    )
+    # Anything left, e.g. several images sharing one paragraph.
+    content = _ANY_IMAGE.sub(
+        lambda match: _progressive_image_tag(match.group(1), match.group(2), media_dir),
+        content,
     )
     return _rewrite_videos(content, media_dir)
+
+
+def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) -> str:
+    """Return an image tag that fetches only once the post is on screen.
+
+    Args:
+        media_path: The media path of the original image.
+        alt: The alt text.
+        media_dir: The post media directory, or None when it is unknown.
+
+    Returns:
+        The img element.
+    """
+    if _PANORAMA_IMAGE.search(media_path):
+        return (
+            f'<img data-src="{_preview_media_path(media_path)}" '
+            f"{_preview_size_attributes(media_dir, media_path)}"
+            f'data-full-src="{media_path}" '
+            f'data-panorama-src="{_panorama_media_path(media_path)}" '
+            f'alt="{alt}" loading="lazy" decoding="async" />'
+        )
+    return (
+        f'<img data-src="{_preview_media_path(media_path)}" '
+        f"{_preview_size_attributes(media_dir, media_path)}"
+        f'data-full-src="{media_path}" alt="{alt}" loading="lazy" decoding="async" />'
+    )
+
+
+def _progressive_paragraph(media_path: str, alt: str, media_dir: Path | None) -> str:
+    """Return a paragraph holding a progressive image.
+
+    Args:
+        media_path: The media path of the original image.
+        alt: The alt text.
+        media_dir: The post media directory, or None when it is unknown.
+
+    Returns:
+        The paragraph element.
+    """
+    image = _progressive_image_tag(media_path, alt, media_dir)
+    if _PANORAMA_IMAGE.search(media_path):
+        return (
+            f'<p class="progressive-image pannellum-panorama" '
+            f'data-panorama="{media_path}">{image}</p>'
+        )
+    return f'<p class="progressive-image">{image}</p>'
 
 
 def _preview_size_attributes(media_dir: Path | None, media_path: str) -> str:
@@ -694,7 +745,7 @@ def _play_on_tap(match: re.Match[str], media_dir: Path | None) -> str:
     source = _VIDEO_SOURCE.search(body)
     poster = _video_poster(media_dir, source.group("source")) if source else None
     if poster and not re.search(r"\bposter=", attributes, re.IGNORECASE):
-        attributes += f' poster="{poster}"'
+        attributes += f' data-poster="{poster}"'
     elif not poster:
         # No still to show: let the browser fetch the first frame, not the file.
         attributes = attributes.replace('preload="none"', 'preload="metadata"')
