@@ -196,8 +196,12 @@ article.single-post > .markdown-body > p:has(img) {
   text-align: center;
 }
 
-article.single-post > .markdown-body > p > img {
-  object-fit: cover;
+/* Lightense moves the img into .lightense-wrap, which is outside the markdown
+   body. Keep the sizing on the image itself so the box does not fall back to the
+   HTML width/height attributes and stretch the photo. */
+article.single-post > .markdown-body > p > img,
+.post-image {
+  object-fit: contain;
   object-position: center;
   height: auto;
   max-height: 80dvh;

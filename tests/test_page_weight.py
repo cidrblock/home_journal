@@ -107,9 +107,9 @@ def test_posts_ship_previews_and_defer_the_original(tmp_path: Path) -> None:
 
     html = _render_markdown("![](media/a.jpg)", media_dir=media)
 
-    assert '<img src="media/preview_a.jpg"' in html
+    assert '<img class="post-image" src="media/preview_a.jpg"' in html
     assert 'data-full-src="media/a.jpg"' in html
-    assert '<img src="media/a.jpg"' not in html
+    assert '<img class="post-image" src="media/a.jpg"' not in html
     assert 'loading="lazy"' in html
     assert "data-src=" not in html
 
@@ -122,9 +122,27 @@ def test_linked_images_show_the_preview_too(tmp_path: Path) -> None:
     html = _render_markdown("[![](media/b.jpg)](media/b.jpg)", media_dir=media)
 
     assert '<a href="media/b.jpg">' in html
-    assert '<img src="media/preview_b.jpg"' in html
+    assert '<img class="post-image" src="media/preview_b.jpg"' in html
     assert 'data-full-src="media/b.jpg"' in html
-    assert '<img src="media/b.jpg"' not in html
+    assert '<img class="post-image" src="media/b.jpg"' not in html
+
+
+def test_post_images_survive_being_moved_out_of_the_markdown_body() -> None:
+    # Lightense reparents the img into .lightense-wrap; the sizing must live on
+    # the image itself or it falls back to the HTML width/height attributes.
+    css = (
+        Path(__file__).parent.parent
+        / "src"
+        / "home_journal"
+        / "site"
+        / "css"
+        / "site.css"
+    ).read_text()
+    assert ".post-image {" in css
+    block = css.split(".post-image {", 1)[1].split("}", 1)[0]
+    assert "height: auto" in block
+    assert "object-fit: contain" in block
+    assert "max-width: 100%" in block
 
 
 def test_post_script_does_not_fetch_originals_while_scrolling() -> None:

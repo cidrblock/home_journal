@@ -629,14 +629,14 @@ def _progressive_image_tag(media_path: str, alt: str, media_dir: Path | None) ->
     """
     if _PANORAMA_IMAGE.search(media_path):
         return (
-            f'<img src="{_preview_media_path(media_path)}" '
+            f'<img class="post-image" src="{_preview_media_path(media_path)}" '
             f"{_preview_size_attributes(media_dir, media_path)}"
             f'data-full-src="{media_path}" '
             f'data-panorama-src="{_panorama_media_path(media_path)}" '
             f'alt="{alt}" loading="lazy" decoding="async" />'
         )
     return (
-        f'<img src="{_preview_media_path(media_path)}" '
+        f'<img class="post-image" src="{_preview_media_path(media_path)}" '
         f"{_preview_size_attributes(media_dir, media_path)}"
         f'data-full-src="{media_path}" alt="{alt}" loading="lazy" decoding="async" />'
     )
