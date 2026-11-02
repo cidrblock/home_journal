@@ -11,6 +11,7 @@ Source files are the GeoNames dumps:
 
 GeoNames data is licensed CC BY 4.0. See the NOTICE next to the output.
 """
+
 import csv
 import gzip
 import sys
@@ -76,9 +77,10 @@ def build(cities_path: Path, admin1_path: Path, countries_path: Path, output: Pa
     excluded_features = {"PPLX", "PPLQ", "PPLH", "PPLW"}
     rows = 0
     output.parent.mkdir(parents=True, exist_ok=True)
-    with cities_path.open(encoding="utf-8") as source, gzip.open(
-        output, "wt", encoding="utf-8", compresslevel=9
-    ) as destination:
+    with (
+        cities_path.open(encoding="utf-8") as source,
+        gzip.open(output, "wt", encoding="utf-8", compresslevel=9) as destination,
+    ):
         destination.write("name\tadmin1\tcountry\tlat\tlon\n")
         for row in csv.reader(source, delimiter="\t"):
             if len(row) < 11 or row[7].strip() in excluded_features:
@@ -92,9 +94,7 @@ def build(cities_path: Path, admin1_path: Path, countries_path: Path, output: Pa
                 continue
             state = admin1.get(f"{country_code}.{admin1_code}", "")
             country = countries.get(country_code, country_code)
-            destination.write(
-                "\t".join([name, state, country, lat, lon]) + "\n"
-            )
+            destination.write("\t".join([name, state, country, lat, lon]) + "\n")
             rows += 1
     return rows
 

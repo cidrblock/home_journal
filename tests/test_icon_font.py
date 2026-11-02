@@ -6,7 +6,6 @@ from pathlib import Path
 
 import home_journal
 
-
 PACKAGE = Path(home_journal.__file__).parent
 REPO = Path(__file__).resolve().parent.parent
 ICON_NAMES = REPO / "tools" / "icon_names.txt"
@@ -22,9 +21,7 @@ def _declared() -> set[str]:
 
 
 def _used() -> set[str]:
-    pages = list((PACKAGE / "templates").glob("*.j2")) + [
-        PACKAGE / "site" / "index.html"
-    ]
+    pages = list((PACKAGE / "templates").glob("*.j2")) + [PACKAGE / "site" / "index.html"]
     used = set()
     for page in pages:
         used.update(re.findall(r"<i[^>]*>([a-z_]+)</i>", page.read_text(encoding="utf-8")))

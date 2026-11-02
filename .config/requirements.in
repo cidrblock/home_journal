@@ -5,4 +5,3 @@ pillow>=10
 python-frontmatter
 python-magic
 waitress
-

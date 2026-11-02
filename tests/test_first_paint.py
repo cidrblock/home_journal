@@ -9,11 +9,8 @@ from pathlib import Path
 
 import home_journal
 
-
 PACKAGE = Path(home_journal.__file__).parent
-PAGES = sorted((PACKAGE / "templates").glob("*.html.j2")) + [
-    PACKAGE / "site" / "index.html"
-]
+PAGES = sorted((PACKAGE / "templates").glob("*.html.j2")) + [PACKAGE / "site" / "index.html"]
 
 
 def test_stylesheet_does_not_hide_the_page() -> None:

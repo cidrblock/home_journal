@@ -1,11 +1,11 @@
 """Offline nearest-city lookup using bundled GeoNames data."""
+
 import gzip
 import math
 
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-
 
 DATA_PATH = Path(__file__).parent / "data" / "cities1000.tsv.gz"
 
