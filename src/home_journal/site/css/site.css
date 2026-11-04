@@ -335,3 +335,28 @@ article.single-post > .markdown-body > .video > video {
   font-weight: bold;
   color: var(--outline);
 }
+
+.tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--on-background);
+}
+
+.tag-option > input[type="checkbox"] {
+  appearance: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  accent-color: var(--primary);
+  flex: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}

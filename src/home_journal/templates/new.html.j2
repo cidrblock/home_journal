@@ -9,7 +9,7 @@
     <meta name="google" content="notranslate" />
     <title>new post</title>
     <link href="css/beer.min.css" rel="stylesheet" />
-    <link href="/css/site.css?v=lightgallery-6" rel="stylesheet" />
+    <link href="/css/site.css?v=form-controls-1" rel="stylesheet" />
 
     <script type="module" src="js/beer.min.js"></script>
     <script type="module" src="js/material-dynamic-colors.min.js"></script>
@@ -106,7 +106,7 @@
                 <div class="s12 small-space"></div>
                 {% for tag in tags | sort %}
                   <div class="s4 m3">
-                    <label class="checkbox">
+                    <label class="tag-option">
                       <input type="checkbox" name="tag-{{ tag }}" />
                       <span>{{ tag|capitalize }}</span>
                     </label>
@@ -175,13 +175,10 @@
                   <label>Media</label>
                 </div>
               </div>
-              <div class="s12">
-                <button
-                  class="absolute right circle extra"
-                  type="submit"
-                  onclick="store()"
-                >
-                  <i>arrow_forward</i>
+              <div class="s12 form-actions">
+                <button class="round" type="submit" onclick="store()">
+                  <i>publish</i>
+                  Publish post
                 </button>
               </div>
             </div>

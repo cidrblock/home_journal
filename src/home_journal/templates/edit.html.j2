@@ -9,7 +9,7 @@
     <meta name="google" content="notranslate" />
     <title>edit post</title>
     <link href="css/beer.min.css" rel="stylesheet" />
-    <link href="/css/site.css?v=lightgallery-6" rel="stylesheet" />
+    <link href="/css/site.css?v=form-controls-1" rel="stylesheet" />
 
     <script type="module" src="js/beer.min.js"></script>
     <script type="module" src="js/material-dynamic-colors.min.js"></script>
@@ -118,7 +118,7 @@
                 <div class="s12 small-space"></div>
                 {% for tag in tags | sort %}
                   <div class="s4 m3">
-                    <label class="checkbox">
+                    <label class="tag-option">
                       <input
                         type="checkbox"
                         name="tag-{{ tag }}"
@@ -217,9 +217,10 @@
                   <label>Passcode</label>
                 </div>
               </div>
-              <div class="s12">
-                <button class="absolute right circle extra" type="submit">
-                  <i>arrow_forward</i>
+              <div class="s12 form-actions">
+                <button class="round" type="submit">
+                  <i>save</i>
+                  Save changes
                 </button>
               </div>
             </div>
