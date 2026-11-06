@@ -169,6 +169,7 @@ def test_real_videos_become_gallery_slides(tmp_path: Path) -> None:
     assert 'data-lg-size="640-360"' in html
     assert 'data-poster="media/preview_clip.jpg"' in html
     assert "&quot;source&quot;" in html
+    assert '&quot;preload&quot;: &quot;metadata&quot;' in html
     assert "<video" not in html
 
 

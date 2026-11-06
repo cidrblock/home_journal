@@ -657,7 +657,10 @@ def _video_slide_tag(
             {
                 "source": [{"src": source_path, "type": "video/mp4"}],
                 "attributes": {
-                    "preload": "none",
+                    # lightGallery starts playback from the video's
+                    # loadedmetadata event, so preload="none" means the click
+                    # creates an element that never loads and never plays.
+                    "preload": "metadata",
                     "controls": True,
                     "playsinline": True,
                 },
