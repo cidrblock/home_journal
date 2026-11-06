@@ -4,10 +4,11 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
+from PIL import Image
+
 from home_journal.utils import _render_markdown
 from home_journal.utils import _thumbnail_name
 from home_journal.utils import jinja_env
-from PIL import Image
 
 
 def _post(**kwargs: object) -> SimpleNamespace:
@@ -184,7 +185,7 @@ def test_motion_photo_clips_stay_inline(tmp_path: Path) -> None:
         gallery="lightgallery",
     )
 
-    assert 'lg-video-item' not in html
+    assert "lg-video-item" not in html
     assert "<video" in html
     assert 'data-poster="media/preview_ex_clip.jpg"' in html
 
@@ -245,12 +246,7 @@ def test_post_images_survive_being_moved_out_of_the_markdown_body() -> None:
     # The gallery also sizes the image; the rule must live on the image itself so
     # it does not depend on being a direct child of the markdown body.
     css = (
-        Path(__file__).parent.parent
-        / "src"
-        / "home_journal"
-        / "site"
-        / "css"
-        / "site.css"
+        Path(__file__).parent.parent / "src" / "home_journal" / "site" / "css" / "site.css"
     ).read_text()
     assert ".post-image {" in css
     block = css.split(".post-image {", 1)[1].split("}", 1)[0]

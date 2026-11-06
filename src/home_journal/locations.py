@@ -1,4 +1,5 @@
 """Post locations: coordinates, named places, and photo GPS."""
+
 import logging
 import math
 
@@ -11,7 +12,6 @@ import yaml
 
 from .geocode import city_label
 from .geocode import nearest_city
-
 
 if TYPE_CHECKING:
     from flask.wrappers import Request
@@ -41,8 +41,7 @@ class PostLocation:
         """
         if self.lat is not None and self.lon is not None:
             return (
-                "https://www.google.com/maps/search/?api=1"
-                f"&query={self.lat:.6f},{self.lon:.6f}"
+                "https://www.google.com/maps/search/?api=1" f"&query={self.lat:.6f},{self.lon:.6f}"
             )
         if self.name:
             return "https://www.google.com/maps/search/?api=1&query=" + quote_plus(self.name)
@@ -169,9 +168,7 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 6371.0 * 2 * math.asin(math.sqrt(min(1.0, a)))
 
 
-def match_place(
-    places: list[PersonalPlace], lat: float, lon: float
-) -> PersonalPlace | None:
+def match_place(places: list[PersonalPlace], lat: float, lon: float) -> PersonalPlace | None:
     """Return the nearest personal place whose radius contains the coordinate.
 
     Args:

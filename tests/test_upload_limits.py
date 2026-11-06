@@ -2,11 +2,11 @@ import logging
 
 from pathlib import Path
 
-from home_journal.run import app
-from home_journal.utils import build_image_previews
-from home_journal.utils import _render_markdown
 from PIL import Image
 
+from home_journal.run import app
+from home_journal.utils import _render_markdown
+from home_journal.utils import build_image_previews
 
 MAX_UPLOAD_SIZE = 250 * 1024 * 1024
 
@@ -20,10 +20,7 @@ def test_pano_images_render_as_pannellum_viewers() -> None:
     assert 'src="media/preview_PXL_20260920_150334255.PANO.jpg"' in rendered
     assert 'data-panorama="media/PXL_20260920_150334255.PANO.jpg"' in rendered
     assert '<a class="lg-item" href="media/ordinary.jpg"' in rendered
-    assert (
-        '<p class="progressive-image"><a class="lg-item" href="media/ordinary.jpg"'
-        in rendered
-    )
+    assert '<p class="progressive-image"><a class="lg-item" href="media/ordinary.jpg"' in rendered
     assert 'class="lg-item" href="media/PXL_20260920_150334255.PANO.jpg"' not in rendered
 
 
