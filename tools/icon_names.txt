@@ -10,5 +10,7 @@ light_mode
 my_location
 person
 place
+publish
+save
 search
 tag
