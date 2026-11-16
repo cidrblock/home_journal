@@ -1,4 +1,5 @@
 """Tests for post locations and the bundled city lookup."""
+
 from pathlib import Path
 
 from home_journal.geocode import city_label
@@ -9,7 +10,6 @@ from home_journal.locations import location_from_form
 from home_journal.locations import parse_location
 from home_journal.locations import resolve_coordinates
 from home_journal.run import app
-
 
 BEND = (44.0582, -121.3153)
 
@@ -44,9 +44,7 @@ def test_location_maps_url_uses_coordinates_then_name() -> None:
     assert located.maps_url == (
         "https://www.google.com/maps/search/?api=1&query=44.050000,-121.310000"
     )
-    assert named.maps_url == (
-        "https://www.google.com/maps/search/?api=1&query=Some+Place+%26+More"
-    )
+    assert named.maps_url == ("https://www.google.com/maps/search/?api=1&query=Some+Place+%26+More")
 
 
 def test_parse_location_reads_frontmatter_mapping() -> None:
@@ -95,10 +93,7 @@ def test_location_from_form_matches_place_and_accepts_name_only(tmp_path: Path) 
         tmp_path: The temporary site directory.
     """
     (tmp_path / "places.yml").write_text(
-        "places:\n"
-        "  - name: Home Base\n"
-        "    lat: 44.05\n"
-        "    lon: -121.31\n",
+        "places:\n" "  - name: Home Base\n" "    lat: 44.05\n" "    lon: -121.31\n",
         encoding="utf-8",
     )
 

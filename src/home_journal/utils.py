@@ -1,4 +1,5 @@
 """Helper utilities."""
+
 import html
 import json
 import logging
@@ -28,7 +29,6 @@ from PIL import ImageOps
 from .locations import PostLocation
 from .locations import location_from_form
 from .locations import parse_location
-
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
@@ -261,7 +261,7 @@ def _extract_images(post: NewPost, request: Request) -> None:
         mimetype = magic.from_file(media_path, mime=True)
         logger.debug("Detected uploaded media type: filename=%s mimetype=%s", filename, mimetype)
         if mimetype.startswith("image/"):
-            eop = b"\x66\x74\x79\x70\x69\x73\x6F\x6D"
+            eop = b"\x66\x74\x79\x70\x69\x73\x6f\x6d"
             with media_path.open("r+b") as image:
                 mem_map = mmap(image.fileno(), 0)
                 file_size = mem_map.size()
@@ -363,9 +363,7 @@ _VIDEO_PREFIX = "ex_h264_"
 _MOTION_VIDEO_PREFIXES = ("ex_h264_", "ex_orig_")
 _PREVIEW_SIZE = (640, 640)
 _PANORAMA_SIZE = (8192, 8192)
-_PANORAMA_IMAGE = re.compile(
-    r"\.(?:pano|photosphere)\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE
-)
+_PANORAMA_IMAGE = re.compile(r"\.(?:pano|photosphere)\.(?:jpg|jpeg|png|webp)$", re.IGNORECASE)
 _BARE_IMAGE = re.compile(
     r'<p><img src="(media/[^"\s]+)" alt="([^"]*)"[^>]*/>\s*</p>', re.IGNORECASE
 )
@@ -373,19 +371,13 @@ _LINKED_IMAGE = re.compile(
     r'<p><a href="(media/[^"\s]+)"><img src="[^"]*" alt="([^"]*)"[^>]*/>\s*</a></p>',
     re.IGNORECASE,
 )
-_ANY_IMAGE = re.compile(
-    r'<img src="(media/[^"\s]+)" alt="([^"]*)"[^>]*/>', re.IGNORECASE
-)
+_ANY_IMAGE = re.compile(r'<img src="(media/[^"\s]+)" alt="([^"]*)"[^>]*/>', re.IGNORECASE)
 _VIDEO_BLOCK = re.compile(
     r"<video(?P<attributes>[^>]*)>(?P<body>.*?)</video>",
     re.IGNORECASE | re.DOTALL,
 )
-_VIDEO_START_ATTRIBUTES = re.compile(
-    r'\s+(?:autoplay|loop|muted)(?:="[^"]*")?', re.IGNORECASE
-)
-_VIDEO_SOURCE = re.compile(
-    r'<source[^>]*\bsrc="(?P<source>media/[^"]+)"', re.IGNORECASE
-)
+_VIDEO_START_ATTRIBUTES = re.compile(r'\s+(?:autoplay|loop|muted)(?:="[^"]*")?', re.IGNORECASE)
+_VIDEO_SOURCE = re.compile(r'<source[^>]*\bsrc="(?P<source>media/[^"]+)"', re.IGNORECASE)
 _TRAILING_IMAGE = re.compile(
     r"[ \t]*!\[\]\(media/([^)\s]+)\)[ \t]*(?:\r?\n)?\Z",
 )
@@ -582,9 +574,7 @@ def _prune_post_list(post_id: str, posts: list[ExistingPost]) -> list[ExistingPo
     return [posts[i] for i in revise]
 
 
-def _render_markdown(
-    content: str, media_dir: Path | None = None, gallery: str = "none"
-) -> str:
+def _render_markdown(content: str, media_dir: Path | None = None, gallery: str = "none") -> str:
     """Render Markdown to HTML.
 
     Args:
@@ -637,9 +627,7 @@ def _render_markdown(
     return _rewrite_videos(content, media_dir, gallery, suppressed_clips)
 
 
-def _video_slide_tag(
-    source_path: str, poster: str, width: int, height: int, alt: str = ""
-) -> str:
+def _video_slide_tag(source_path: str, poster: str, width: int, height: int, alt: str = "") -> str:
     """Return a lightGallery video slide with a poster.
 
     Args:
@@ -909,9 +897,7 @@ def _play_on_tap(
     if source_path and suppressed_clips and Path(source_path).name in suppressed_clips:
         return ""
     poster = _video_poster(media_dir, source_path) if source_path else None
-    is_motion = bool(
-        source_path and Path(source_path).name.startswith(_MOTION_VIDEO_PREFIXES)
-    )
+    is_motion = bool(source_path and Path(source_path).name.startswith(_MOTION_VIDEO_PREFIXES))
 
     if gallery == "lightgallery" and source_path and poster and not is_motion and media_dir:
         size = _image_dimensions(media_dir / Path(poster).name)
@@ -977,7 +963,10 @@ def build_image_previews(site_dir: Path) -> int:
                     if rebuild_panorama:
                         panorama = ImageOps.exif_transpose(source)
                         panorama.thumbnail(_PANORAMA_SIZE, Image.Resampling.LANCZOS)
-                        if panorama_path.suffix.lower() in (".jpg", ".jpeg") and panorama.mode not in (
+                        if panorama_path.suffix.lower() in (
+                            ".jpg",
+                            ".jpeg",
+                        ) and panorama.mode not in (
                             "RGB",
                             "L",
                         ):
@@ -1139,9 +1128,7 @@ def build_video_posters(site_dir: Path) -> int:
             continue
         if video_path.name.startswith(_MOTION_VIDEO_PREFIXES):
             continue
-        poster_path = video_path.with_name(
-            _PREVIEW_PREFIX + video_path.with_suffix(".jpg").name
-        )
+        poster_path = video_path.with_name(_PREVIEW_PREFIX + video_path.with_suffix(".jpg").name)
         if poster_path.exists():
             continue
         result = subprocess.run(
@@ -1365,9 +1352,7 @@ def build_thumbnails(posts: list[ExistingPost]) -> None:
             if transposed is not None:
                 image = transposed
             image.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
-            image.convert("RGB").save(
-                thumbnail_path, format="WEBP", quality=80, method=6
-            )
+            image.convert("RGB").save(thumbnail_path, format="WEBP", quality=80, method=6)
             # Thumbnails from older builds were JPEG; drop them now that the tile
             # points somewhere else.
             for stale in image_dir.glob(f"thumb_{Path(index_image).stem}.*"):

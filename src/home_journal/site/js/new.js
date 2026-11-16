@@ -124,11 +124,7 @@ function useMyLocation() {
     return;
   }
   setLocationStatus("Getting your location...");
-  if (
-    source &&
-    name &&
-    ["places", "photo", "browser"].includes(source.value)
-  ) {
+  if (source && name && ["places", "photo", "browser"].includes(source.value)) {
     name.value = "";
   }
   navigator.geolocation.getCurrentPosition(
@@ -146,7 +142,7 @@ function useMyLocation() {
         "/location/resolve?lat=" +
           encodeURIComponent(lat.value) +
           "&lon=" +
-          encodeURIComponent(lon.value)
+          encodeURIComponent(lon.value),
       )
         .then(function (response) {
           return response.ok ? response.json() : null;
@@ -163,10 +159,10 @@ function useMyLocation() {
     },
     function () {
       setLocationStatus(
-        "Could not get your location. Type a place or leave blank."
+        "Could not get your location. Type a place or leave blank.",
       );
     },
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
   );
 }
 
@@ -220,7 +216,7 @@ window.onload = function (e) {
         status.querySelector("h5").innerText = "Submitting";
         progress_text.innerText = "Starting";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -230,7 +226,7 @@ window.onload = function (e) {
         ui("#progress", percent);
         progress_text.innerText = Math.round(percent) + "%";
       },
-      false
+      false,
     );
 
     xhr.upload.addEventListener(
@@ -238,7 +234,7 @@ window.onload = function (e) {
       function (event) {
         progress_text.innerText = "Processing";
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -257,7 +253,7 @@ window.onload = function (e) {
           }
         }
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -265,7 +261,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload could not be completed");
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -273,7 +269,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload was canceled");
       },
-      false
+      false,
     );
 
     xhr.addEventListener(
@@ -281,7 +277,7 @@ window.onload = function (e) {
       function () {
         showFailure("The upload timed out");
       },
-      false
+      false,
     );
 
     xhr.open(this.getAttribute("method"), this.getAttribute("action"), true);

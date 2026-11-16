@@ -13,6 +13,7 @@ file to about 3 KB.
 
 Material Symbols is licensed under the SIL Open Font License 1.1.
 """
+
 import sys
 import tempfile
 
@@ -20,7 +21,6 @@ from pathlib import Path
 
 from fontTools import subset
 from fontTools.ttLib import TTFont
-
 
 NAMES_FILE = Path(__file__).with_name("icon_names.txt")
 
