@@ -10,7 +10,6 @@ from importlib import resources
 from .run import DEFAULT_MAX_UPLOAD_SIZE
 from .run import run_server
 
-
 logger = logging.getLogger()
 
 
